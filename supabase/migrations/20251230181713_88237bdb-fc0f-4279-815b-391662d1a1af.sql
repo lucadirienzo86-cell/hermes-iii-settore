@@ -1,0 +1,1 @@
+ALTER TABLE aziende ADD COLUMN IF NOT EXISTS telefono text;

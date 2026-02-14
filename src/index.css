@@ -1,0 +1,513 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== DESIGN SYSTEM ===== */
+
+@layer base {
+  :root {
+    /* Core Colors - Petroleum Blue Theme */
+    --background: 0 0% 100%;
+    --foreground: 220 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+
+    /* Primary - Petroleum Blue #03607E */
+    --primary: 193 96% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Darker Petroleum */
+    --secondary: 193 85% 20%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted - Soft warm gray */
+    --muted: 40 20% 97%;
+    --muted-foreground: 220 10% 50%;
+
+    /* Accent - Light petroleum */
+    --accent: 193 45% 92%;
+    --accent-foreground: 193 85% 20%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 10% 92%;
+    --input: 220 10% 92%;
+    --ring: 193 96% 25%;
+
+    --radius: 0.5rem;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(193 96% 25%), hsl(193 85% 20%));
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 100%), hsl(40 20% 97%));
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 15% 15% / 0.03);
+    --shadow-card: 0 2px 8px -2px hsl(220 15% 15% / 0.05), 0 4px 16px -4px hsl(220 15% 15% / 0.06);
+    --shadow-hover: 0 8px 24px -4px hsl(220 15% 15% / 0.08), 0 2px 8px -2px hsl(220 15% 15% / 0.04);
+    --shadow-lg: 0 12px 32px -8px hsl(220 15% 15% / 0.12);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 15% 15%;
+    --sidebar-primary: 193 96% 25%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 193 45% 92%;
+    --sidebar-accent-foreground: 193 85% 20%;
+    --sidebar-border: 220 10% 92%;
+    --sidebar-muted: 220 10% 50%;
+    --sidebar-ring: 193 96% 25%;
+
+    /* Status Colors */
+    --success: 122 39% 49%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 100%;
+    --info: 200 85% 50%;
+    --info-foreground: 0 0% 100%;
+
+    /* Hers specific colors */
+    --hers-yellow: 45 95% 65%;
+    --hers-pink: 340 65% 70%;
+    --hers-gray: 220 10% 75%;
+    --hers-dark: 220 15% 15%;
+    --hers-mint: 193 45% 92%;
+
+    /* Institutional Colors - Blue Europa */
+    --ist-dark: 220 100% 20%;
+    --ist-primary: 220 100% 30%;
+    --ist-background: 0 0% 98%;
+    --ist-success: 122 39% 49%;
+    --ist-warning: 45 100% 51%;
+    --ist-danger: 4 90% 55%;
+    --ist-blue-europa: 220 100% 30%;
+  }
+
+  .dark {
+    --background: 220 15% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 220 15% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 15% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 193 80% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 193 70% 30%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 193 45% 20%;
+    --accent-foreground: 193 45% 85%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 193 80% 35%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(193 80% 35%), hsl(193 70% 30%));
+    --gradient-hero: linear-gradient(180deg, hsl(220 15% 12%), hsl(220 15% 8%));
+    
+    --shadow-card: 0 2px 8px 0 hsl(0 0% 0% / 0.3);
+    --shadow-hover: 0 8px 24px -4px hsl(0 0% 0% / 0.4);
+    
+    --sidebar-background: 220 15% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 193 80% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-muted: 220 10% 50%;
+    --sidebar-ring: 193 80% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* ===== INSTITUTIONAL DESIGN SYSTEM ===== */
+  
+  .bg-ist-dark {
+    background-color: hsl(var(--ist-dark));
+  }
+  
+  .bg-ist-background {
+    background-color: hsl(var(--ist-background));
+  }
+  
+  .bg-ist-primary {
+    background-color: hsl(var(--ist-primary));
+  }
+  
+  .text-ist-primary {
+    color: hsl(var(--ist-primary));
+  }
+
+  /* Institutional Card */
+  .ist-card {
+    @apply bg-card rounded-lg shadow-card border-0;
+  }
+
+  .ist-card-header {
+    @apply flex items-center gap-2 text-lg font-semibold;
+  }
+
+  .ist-card-letter {
+    @apply inline-flex items-center justify-center w-7 h-7 rounded-full bg-ist-primary text-white text-sm font-bold;
+    background-color: hsl(var(--ist-primary));
+  }
+
+  /* Status Badges */
+  .ist-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .ist-badge-success {
+    @apply bg-success/15 text-success;
+  }
+
+  .ist-badge-warning {
+    @apply bg-warning/15 text-warning;
+  }
+
+  .ist-badge-danger {
+    @apply bg-destructive/15 text-destructive;
+  }
+
+  .ist-badge-info {
+    @apply bg-info/15 text-info;
+  }
+
+  .ist-badge-muted {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  /* Traffic Light Indicators */
+  .ist-light {
+    @apply w-4 h-4 rounded-full;
+  }
+
+  .ist-light-green {
+    @apply bg-success;
+  }
+
+  .ist-light-yellow {
+    @apply bg-warning;
+  }
+
+  .ist-light-red {
+    @apply bg-destructive;
+  }
+
+  /* Institutional Table */
+  .ist-table {
+    @apply w-full border-collapse;
+  }
+  
+  .ist-table thead {
+    @apply bg-muted;
+  }
+  
+  .ist-table th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider;
+  }
+  
+  .ist-table td {
+    @apply px-4 py-4 text-sm text-foreground;
+  }
+  
+  .ist-table tbody tr {
+    @apply transition-colors border-b border-border;
+  }
+
+  .ist-table tbody tr:nth-child(even) {
+    @apply bg-muted/30;
+  }
+  
+  .ist-table tbody tr:hover {
+    @apply bg-muted/50;
+  }
+
+  /* Hubspot table - kept for admin */
+  .hubspot-table {
+    @apply w-full border-collapse;
+  }
+  
+  .hubspot-table thead {
+    @apply bg-muted;
+  }
+  
+  .hubspot-table th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border;
+  }
+  
+  .hubspot-table td {
+    @apply px-4 py-4 text-sm text-foreground border-b border-border;
+  }
+  
+  .hubspot-table tbody tr {
+    @apply transition-colors hover:bg-muted/50;
+  }
+
+  .hubspot-card {
+    @apply bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+
+  /* ===== HERS APP MOBILE DESIGN SYSTEM ===== */
+  
+  /* Hers Card - Clean, rounded, minimal */
+  .hers-card {
+    @apply bg-card rounded-3xl p-6 border-0;
+    box-shadow: var(--shadow-card);
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hers-card:hover {
+    box-shadow: var(--shadow-hover);
+    @apply -translate-y-0.5;
+  }
+  
+  .hers-card:active {
+    @apply scale-[0.98] translate-y-0;
+  }
+
+  /* Hers Section Card - Larger with icon */
+  .hers-section-card {
+    @apply hers-card relative overflow-hidden;
+  }
+
+  .hers-section-card::before {
+    content: '';
+    @apply absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-10;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  }
+
+  /* Bottom Nav - Hers style */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-card;
+    @apply border-t border-border/50;
+    box-shadow: 0 -4px 20px -4px hsl(var(--foreground) / 0.05);
+  }
+  
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center gap-1 py-3 px-4;
+    @apply transition-all duration-200;
+  }
+  
+  .bottom-nav-item.active {
+    @apply text-primary;
+  }
+  
+  .bottom-nav-item.active .nav-icon {
+    @apply scale-110;
+  }
+  
+  .bottom-nav-item:not(.active) {
+    @apply text-muted-foreground;
+  }
+  
+  .bottom-nav-indicator {
+    @apply absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-b-full;
+    @apply transition-all duration-300;
+  }
+
+  /* Hers Pill Badge - Pastel colors */
+  .hers-badge {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium;
+    @apply transition-colors duration-150;
+  }
+  
+  .hers-badge-yellow {
+    background: hsl(var(--hers-yellow) / 0.2);
+    color: hsl(38 70% 35%);
+  }
+  
+  .hers-badge-pink {
+    background: hsl(var(--hers-pink) / 0.2);
+    color: hsl(340 50% 40%);
+  }
+  
+  .hers-badge-gray {
+    background: hsl(var(--hers-gray) / 0.2);
+    color: hsl(220 10% 40%);
+  }
+
+  .hers-badge-mint {
+    background: hsl(var(--hers-mint));
+    color: hsl(193 85% 20%);
+  }
+
+  .hers-badge-success {
+    @apply bg-success/15 text-success;
+  }
+
+  /* Pill Badge - kept for compatibility */
+  .pill-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold;
+    @apply transition-colors duration-150;
+  }
+  
+  .pill-badge-success {
+    @apply bg-success/10 text-success border border-success/20;
+  }
+  
+  .pill-badge-warning {
+    @apply bg-warning/10 text-warning border border-warning/20;
+  }
+  
+  .pill-badge-error {
+    @apply bg-destructive/10 text-destructive border border-destructive/20;
+  }
+  
+  .pill-badge-info {
+    @apply bg-primary/10 text-primary border border-primary/20;
+  }
+  
+  .pill-badge-muted {
+    @apply bg-muted text-muted-foreground border border-border;
+  }
+
+  /* Hers Button */
+  .hers-button {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold text-sm;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .hers-button-primary {
+    @apply bg-foreground text-background hover:opacity-90;
+    @apply focus:ring-foreground;
+  }
+
+  .hers-button-secondary {
+    @apply bg-muted text-foreground hover:bg-muted/70;
+    @apply focus:ring-muted-foreground;
+  }
+
+  .hers-button-mint {
+    @apply bg-primary text-primary-foreground hover:opacity-90;
+    @apply focus:ring-primary;
+  }
+
+  /* KPI Card - Hers style */
+  .kpi-card {
+    @apply hers-card flex flex-col;
+  }
+  
+  .kpi-card .kpi-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+  
+  .kpi-card .kpi-value {
+    @apply text-3xl font-bold text-foreground mt-2;
+  }
+  
+  .kpi-card .kpi-trend {
+    @apply text-xs mt-3 flex items-center gap-1;
+  }
+  
+  .kpi-card .kpi-trend.positive {
+    @apply text-success;
+  }
+  
+  .kpi-card .kpi-trend.negative {
+    @apply text-destructive;
+  }
+
+  /* Floating Card - kept for compatibility */
+  .floating-card {
+    @apply hers-card;
+  }
+
+  /* Bento Grid - kept for admin */
+  .bento-grid {
+    @apply grid gap-4;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+  }
+  
+  .bento-grid .bento-item {
+    @apply hers-card;
+  }
+  
+  .bento-grid .bento-item.bento-wide {
+    grid-column: span 2;
+  }
+  
+  .bento-grid .bento-item.bento-tall {
+    grid-row: span 2;
+  }
+
+  /* Progress Steps - Hers style */
+  .progress-steps {
+    @apply flex items-center justify-between relative;
+  }
+
+  .progress-step {
+    @apply flex flex-col items-center z-10;
+  }
+
+  .progress-step-dot {
+    @apply w-3 h-3 rounded-full bg-border transition-colors duration-300;
+  }
+
+  .progress-step-dot.active {
+    @apply bg-primary;
+  }
+
+  .progress-step-dot.completed {
+    @apply bg-success;
+  }
+
+  .progress-step-label {
+    @apply text-[10px] text-muted-foreground mt-1 text-center max-w-[60px];
+  }
+
+  .progress-line {
+    @apply absolute top-1.5 left-0 right-0 h-[2px] bg-border -z-0;
+  }
+
+  .progress-line-fill {
+    @apply h-full bg-primary transition-all duration-500;
+  }
+
+  /* Animated gradient background */
+  .gradient-animated {
+    background: linear-gradient(-45deg, hsl(193 96% 25%), hsl(193 85% 20%), hsl(193 70% 30%), hsl(193 96% 25%));
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+}
