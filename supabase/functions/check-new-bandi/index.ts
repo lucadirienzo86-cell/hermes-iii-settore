@@ -116,34 +116,31 @@ serve(async (req) => {
     }
 
     let sentCount = 0;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+
     for (const [userId, notifications] of userNotifications) {
-      // Get user's push subscriptions
-      const { data: subscriptions } = await supabase
-        .from('push_subscriptions')
-        .select('*')
-        .eq('user_id', userId);
-
-      if (!subscriptions || subscriptions.length === 0) continue;
-
-      // Send consolidated notification
       const count = notifications.length;
       const payload = {
-        title: count === 1 ? notifications[0].title : `🎉 ${count} nuove opportunità!`,
+        title: count === 1 ? notifications[0].title : `${count} nuove opportunita!`,
         body: count === 1 ? notifications[0].body : `Hai ${count} nuovi bandi o avvisi compatibili con la tua azienda`,
         url: count === 1 ? notifications[0].url : '/app/dashboard',
         data: { count, items: notifications },
       };
 
-      // Log notification
-      await supabase.from('push_notifications_log').insert({
-        user_id: userId,
-        tipo: 'new_bandi',
-        titolo: payload.title,
-        corpo: payload.body,
-        dati: payload.data,
-      });
-
-      sentCount++;
+      // Chiama send-push-notification (gestisce VAPID, subscriptions e log)
+      try {
+        const res = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          },
+          body: JSON.stringify({ user_ids: [userId], payload }),
+        });
+        if (res.ok) sentCount++;
+      } catch (e) {
+        console.error(`Push failed for user ${userId}:`, e);
+      }
     }
 
     return new Response(
