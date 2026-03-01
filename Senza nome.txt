@@ -1,0 +1,66 @@
+Analisi predittiva (machine learning su pattern storici, sentiment da news/social)
+Automazione (bot che eseguono ordini in millisecondi)
+Gestione rischio (stop-loss dinamici, hedging automatico)
+Realtime insights (NLP su news, GenAI per report personalizzati)
+
+
+SUPABASE PROGETTO
+DI RIENZO SRL INVESTMENT HTF 
+PWD 3ubicAvC&B9g&b-
+
+
+
+
+
+
+
+
+
+Monitorare GenAI è la tecnologia più influente attesa nei prossimi 3 anni (43% dei rispondenti la vede al top, superando machine learning/NLP).
+
+
+Migliori piattaforme e tool AI trading 2026 (attuali top)
+
+cco i più citati e performanti al febbraio 2026 (basato su recensioni, survey e community):
+
+Trade Ideas (Holly AI) → il più forte per stock scanning + segnali AI
+Holly AI analizza in realtime pattern, genera entry/exit con probabilità storiche
+Brokerage Plus per esecuzione automatica
+Prezzo: da ~89$/mese (free tier limitato)
+Ideale per day trading USA/Europa
+
+TrendSpider → eccellente per charting + AI automation
+AI Strategy Lab: addestri modelli ML senza codice
+Sidekick AI: chatta per analisi chart
+Backtesting + alert multi-timeframe
+Prezzo: da ~51$/mese
+
+Tickeron → portfolio AI + segnali
+Previsioni su stock, forex, crypto
+Bot per copy trading
+Prezzo: da ~72$/mese
+
+Capitalise.ai → no-code automation (collega a broker)
+Scrivi in inglese naturale ("se RSI >70 vendi") → crea strategie
+Integra TradingView alerts
+Free con broker partner (es. Interactive Brokers)
+
+eToro + AI features (Morgan Stanley integration) → per crypto/stock
+Copy trading + AI portfolio tools
+Crypto trading esteso su E*TRADE
+
+
+Altri emergenti:
+
+Danelfin / AltIndex / Kavout → AI stock pickers (rating alpha-based)
+StockHero → wizard per creare bot AI
+
+Supabase vs localStorage nel tuo contesto (se stai pensando alla Kanban)
+Tornando al tuo setup Claude Code:
+
+Se scegli Supabase → ottieni realtime sync (board aggiorna live per team/influencer), auth facile, storage per allegati video/foto → ideale per un'app "reale" usata da creator multi-device. Costa 0 all'inizio (free tier), scalabile.
+Se scegli localStorage → tutto offline/browser, zero setup, ma no sync, limite dati, non professionale.
+
+Consiglio mio: vai con Supabase (premi 2) se l'app è per influencer veri (sync + realtime = killer feature). È più allineato a trend 2026 (realtime AI + cloud DB facili).
+Premi 2 + Invio ora → dimmi cosa chiede dopo (board columns?) e procediamo a finalizzare il piano/team!
+Se invece volevi info generali su AI trading (non legato alla Kanban), dimmi di più: day trading? crypto? stock picking? bot automatici? O vuoi esempi di prompt per Claude Code su strategie AI trading? 😊

@@ -1,0 +1,18 @@
+flowchart LR
+  Browser[Browser / Client]
+  subgraph FE [Frontend]
+    A[React (Vite)]
+  end
+  subgraph SB [Supabase]
+    B[Auth]
+    C[Postgres DB]
+    D[Storage]
+    E[Functions]
+  end
+  Browser -->|UI / REST calls| A
+  A -->|supabase-js| B
+  A -->|supabase-js| C
+  A -->|invoke| E
+  E -->|fetch| External[External APIs (AI, Creditsafe, RNA)]
+  E --> C
+  E --> D

@@ -26,17 +26,23 @@ ADD COLUMN IF NOT EXISTS attivo BOOLEAN DEFAULT true;
 ALTER TABLE public.enti ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies for enti
-CREATE POLICY "enti_select_authenticated" ON public.enti
-FOR SELECT TO authenticated
-USING (true);
+DO $$ BEGIN
+  CREATE POLICY "enti_select_authenticated" ON public.enti
+  FOR SELECT TO authenticated
+  USING (true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "enti_manage_admin" ON public.enti
-FOR ALL TO authenticated
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "enti_manage_admin" ON public.enti
+  FOR ALL TO authenticated
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "enti_manage_comune" ON public.enti
-FOR ALL TO authenticated
-USING (has_role(auth.uid(), 'comune'::app_role) OR has_role(auth.uid(), 'assessorato_terzo_settore'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "enti_manage_comune" ON public.enti
+  FOR ALL TO authenticated
+  USING (has_role(auth.uid(), 'comune'::app_role) OR has_role(auth.uid(), 'assessorato_terzo_settore'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Insert default Comune di Cassino entity
 INSERT INTO public.enti (nome_ente, tipo_ente, stato_runts, attivo)
@@ -64,14 +70,18 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
-CREATE TRIGGER update_profiles_updated_at
-BEFORE UPDATE ON public.profiles
-FOR EACH ROW
-EXECUTE FUNCTION public.update_profiles_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_profiles_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_profiles_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Add update trigger for enti
 DROP TRIGGER IF EXISTS update_enti_updated_at ON public.enti;
-CREATE TRIGGER update_enti_updated_at
-BEFORE UPDATE ON public.enti
-FOR EACH ROW
-EXECUTE FUNCTION public.update_profiles_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_enti_updated_at
+  BEFORE UPDATE ON public.enti
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_profiles_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

@@ -18,49 +18,59 @@ CREATE TABLE public.aziende_aiuti_rna (
 ALTER TABLE public.aziende_aiuti_rna ENABLE ROW LEVEL SECURITY;
 
 -- Policy per admin
-CREATE POLICY "Admins can manage aziende_aiuti_rna"
-ON public.aziende_aiuti_rna
-FOR ALL
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage aziende_aiuti_rna"
+  ON public.aziende_aiuti_rna
+  FOR ALL
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy per aziende (visualizzare i propri aiuti)
-CREATE POLICY "Aziende can view their own aiuti"
-ON public.aziende_aiuti_rna
-FOR SELECT
-USING (
-  azienda_id IN (
-    SELECT id FROM public.aziende WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Aziende can view their own aiuti"
+  ON public.aziende_aiuti_rna
+  FOR SELECT
+  USING (
+    azienda_id IN (
+      SELECT id FROM public.aziende WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy per gestori (gestire aiuti delle loro aziende)
-CREATE POLICY "Gestori can manage aiuti of their aziende"
-ON public.aziende_aiuti_rna
-FOR ALL
-USING (
-  azienda_id IN (
-    SELECT id FROM public.aziende 
-    WHERE inserita_da_gestore_id IN (
-      SELECT id FROM public.gestori WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Gestori can manage aiuti of their aziende"
+  ON public.aziende_aiuti_rna
+  FOR ALL
+  USING (
+    azienda_id IN (
+      SELECT id FROM public.aziende 
+      WHERE inserita_da_gestore_id IN (
+        SELECT id FROM public.gestori WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy per collaboratori (gestire aiuti delle loro aziende)
-CREATE POLICY "Collaboratori can manage aiuti of their aziende"
-ON public.aziende_aiuti_rna
-FOR ALL
-USING (
-  azienda_id IN (
-    SELECT id FROM public.aziende 
-    WHERE inserita_da_collaboratore_id IN (
-      SELECT id FROM public.collaboratori WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Collaboratori can manage aiuti of their aziende"
+  ON public.aziende_aiuti_rna
+  FOR ALL
+  USING (
+    azienda_id IN (
+      SELECT id FROM public.aziende 
+      WHERE inserita_da_collaboratore_id IN (
+        SELECT id FROM public.collaboratori WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Trigger per aggiornare updated_at
-CREATE TRIGGER update_aziende_aiuti_rna_updated_at
-BEFORE UPDATE ON public.aziende_aiuti_rna
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_aziende_aiuti_rna_updated_at
+  BEFORE UPDATE ON public.aziende_aiuti_rna
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

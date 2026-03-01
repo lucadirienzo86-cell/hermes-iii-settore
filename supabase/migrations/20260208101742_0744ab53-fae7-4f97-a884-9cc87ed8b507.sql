@@ -1,7 +1,9 @@
 -- =============================================
 -- ENUM per ruoli PA (Funzionario, Assessore, Amministratore)
 -- =============================================
-CREATE TYPE public.ruolo_pa AS ENUM ('funzionario', 'assessore', 'amministratore');
+DO $$ BEGIN
+  CREATE TYPE public.ruolo_pa AS ENUM ('funzionario', 'assessore', 'amministratore');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- Tabella utenti istituzionali (dipendenti Comune)
@@ -24,20 +26,24 @@ CREATE TABLE public.utenti_istituzionali (
 ALTER TABLE public.utenti_istituzionali ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies
-CREATE POLICY "Utenti istituzionali visibili ai ruoli PA"
-ON public.utenti_istituzionali FOR SELECT
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'admin') OR
-  public.has_role(auth.uid(), 'comune') OR
-  public.has_role(auth.uid(), 'assessorato_terzo_settore')
-);
+DO $$ BEGIN
+  CREATE POLICY "Utenti istituzionali visibili ai ruoli PA"
+  ON public.utenti_istituzionali FOR SELECT
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'admin') OR
+    public.has_role(auth.uid(), 'comune') OR
+    public.has_role(auth.uid(), 'assessorato_terzo_settore')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin può gestire utenti istituzionali"
-ON public.utenti_istituzionali FOR ALL
-TO authenticated
-USING (public.has_role(auth.uid(), 'admin'))
-WITH CHECK (public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admin può gestire utenti istituzionali"
+  ON public.utenti_istituzionali FOR ALL
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- Tabella Audit Log per tracciamento eventi
@@ -56,20 +62,24 @@ CREATE TABLE public.audit_log_terzo_settore (
 ALTER TABLE public.audit_log_terzo_settore ENABLE ROW LEVEL SECURITY;
 
 -- Policy: solo ruoli PA possono vedere l'audit log
-CREATE POLICY "Audit log visibile ai ruoli PA"
-ON public.audit_log_terzo_settore FOR SELECT
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'admin') OR
-  public.has_role(auth.uid(), 'comune') OR
-  public.has_role(auth.uid(), 'assessorato_terzo_settore')
-);
+DO $$ BEGIN
+  CREATE POLICY "Audit log visibile ai ruoli PA"
+  ON public.audit_log_terzo_settore FOR SELECT
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'admin') OR
+    public.has_role(auth.uid(), 'comune') OR
+    public.has_role(auth.uid(), 'assessorato_terzo_settore')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy: insert per utenti autenticati (sistema registra le azioni)
-CREATE POLICY "Audit log insert per autenticati"
-ON public.audit_log_terzo_settore FOR INSERT
-TO authenticated
-WITH CHECK (true);
+DO $$ BEGIN
+  CREATE POLICY "Audit log insert per autenticati"
+  ON public.audit_log_terzo_settore FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- Tabella Template Comunicazioni (fissi, non modificabili)
@@ -90,14 +100,16 @@ CREATE TABLE public.template_comunicazioni (
 ALTER TABLE public.template_comunicazioni ENABLE ROW LEVEL SECURITY;
 
 -- Policy: lettura per ruoli PA
-CREATE POLICY "Template visibili ai ruoli PA"
-ON public.template_comunicazioni FOR SELECT
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'admin') OR
-  public.has_role(auth.uid(), 'comune') OR
-  public.has_role(auth.uid(), 'assessorato_terzo_settore')
-);
+DO $$ BEGIN
+  CREATE POLICY "Template visibili ai ruoli PA"
+  ON public.template_comunicazioni FOR SELECT
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'admin') OR
+    public.has_role(auth.uid(), 'comune') OR
+    public.has_role(auth.uid(), 'assessorato_terzo_settore')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- Inserimento template comunicazioni predefiniti
@@ -233,10 +245,12 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER trigger_audit_associazioni
-AFTER INSERT OR UPDATE ON public.associazioni_terzo_settore
-FOR EACH ROW
-EXECUTE FUNCTION public.audit_associazione_changes();
+DO $$ BEGIN
+  CREATE TRIGGER trigger_audit_associazioni
+  AFTER INSERT OR UPDATE ON public.associazioni_terzo_settore
+  FOR EACH ROW
+  EXECUTE FUNCTION public.audit_associazione_changes();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- Trigger per audit automatico su comunicazioni
@@ -270,7 +284,9 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER trigger_audit_comunicazioni
-AFTER INSERT OR UPDATE ON public.comunicazioni_istituzionali
-FOR EACH ROW
-EXECUTE FUNCTION public.audit_comunicazione_changes();
+DO $$ BEGIN
+  CREATE TRIGGER trigger_audit_comunicazioni
+  AFTER INSERT OR UPDATE ON public.comunicazioni_istituzionali
+  FOR EACH ROW
+  EXECUTE FUNCTION public.audit_comunicazione_changes();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

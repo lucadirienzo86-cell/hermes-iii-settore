@@ -71,7 +71,7 @@ const ComuneAuth = () => {
       }
 
       toast.success('Accesso effettuato con successo');
-      navigate('/terzo-settore');
+      navigate('/istituzionale/dashboard');
     } catch (error: any) {
       toast.error(error.message || "Credenziali non valide");
     } finally {

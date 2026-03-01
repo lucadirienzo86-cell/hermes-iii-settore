@@ -1,21 +1,24 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { IstituzionaleLayout } from '@/layouts/IstituzionaleLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { 
-  AlertCircle, 
-  FileWarning, 
-  Calendar, 
-  FileText, 
-  CheckCircle, 
-  Users, 
-  TrendingUp, 
+import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/StatCard';
+import {
+  AlertCircle,
+  FileWarning,
+  Calendar,
+  FileText,
+  Users,
+  TrendingUp,
   Clock,
   Plus,
-  UserPlus
+  UserPlus,
+  Heart,
+  Building2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -24,6 +27,7 @@ import { TaskManagementPanel } from '@/components/istituzionale/TaskManagementPa
 
 const Scrivania = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
 
   // Fetch association stats
   const { data: stats } = useQuery({
@@ -63,177 +67,91 @@ const Scrivania = () => {
     },
   });
 
-  // Setup progress calculation - simplified checklist
-  const setupSteps = [
-    { label: 'Configura il profilo ente', completed: true },
-    { label: 'Aggiungi contatti ufficio', completed: true },
-    { label: 'Importa associazioni', completed: (stats?.totale || 0) > 0 },
-    { label: 'Crea primo bando', completed: (bandiAttivi?.length || 0) > 0 },
-  ];
-  const completedSteps = setupSteps.filter(s => s.completed).length;
-  const progressPercent = (completedSteps / setupSteps.length) * 100;
+  const userName = (profile as { full_name?: string } | null)?.full_name
+    || (profile as { nome?: string; cognome?: string } | null)?.nome
+    || 'Funzionario';
+  const userEmail = profile?.email || '';
 
   return (
     <IstituzionaleLayout breadcrumbs={[{ label: 'Scrivania' }]}>
       <div className="space-y-6">
-        {/* Getting Started Card */}
-        <Card className="border border-gray-200 shadow-sm bg-white">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Stato Avanzamento</p>
-                <CardTitle className="text-xl font-bold text-[#1a1a2e]">
-                  Configurazione <span className="text-[#003399] font-bold">HERMES</span>
-                </CardTitle>
+
+        {/* Hero Header */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-xl bg-[#0D9488]/10 flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#0D9488]" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Scrivania</h1>
+                  <p className="text-sm text-gray-500">
+                    Benvenuto, <span className="font-medium text-gray-700">{userName}</span>
+                    {userEmail && <> • {userEmail}</>}
+                    {' '}• Gestisci il Terzo Settore del Comune
+                  </p>
+                </div>
               </div>
-              <span className="text-sm font-semibold text-[#003399]">
-                {completedSteps}/{setupSteps.length} completati
-              </span>
             </div>
-          </CardHeader>
-          <CardContent>
-            {/* Progress bar */}
-            <div className="mb-4">
-              <Progress value={progressPercent} className="h-3 bg-gray-100" />
+
+            {/* Pill counters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className="bg-teal-50 text-teal-700 border border-teal-200 rounded-full px-3 py-1 text-xs font-semibold">
+                <span className="font-bold mr-1">{stats?.totale ?? 0}</span> associazioni
+              </Badge>
+              <Badge className="bg-green-50 text-green-700 border border-green-200 rounded-full px-3 py-1 text-xs font-semibold">
+                <span className="font-bold mr-1">{bandiAttivi?.length ?? 0}</span> bandi attivi
+              </Badge>
+              <Badge className="bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-3 py-1 text-xs font-semibold">
+                <span className="font-bold mr-1">{stats?.nuoveRichieste ?? 0}</span> da validare
+              </Badge>
             </div>
-            
-            {/* Setup checklist */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {setupSteps.map((step, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center gap-2 p-3 rounded-lg border ${
-                    step.completed 
-                      ? 'bg-green-50 border-green-200' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    step.completed ? 'bg-green-500' : 'bg-gray-300'
-                  }`}>
-                    {step.completed ? (
-                      <CheckCircle className="w-4 h-4 text-white" />
-                    ) : (
-                      <span className="text-white text-xs font-bold">{index + 1}</span>
-                    )}
-                  </div>
-                  <span className={`text-xs font-medium ${step.completed ? 'text-green-700' : 'text-gray-600'}`}>
-                    {step.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stats Grid with Add buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Associations */}
-          <Card className="border border-gray-200 shadow-sm bg-white group hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#003399]/10 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-[#003399]" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[#1a1a2e]">{stats?.totale || 0}</p>
-                    <p className="text-sm text-gray-500">Associazioni Totali</p>
-                  </div>
-                </div>
-                <Button 
-                  size="icon"
-                  variant="ghost"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity bg-[#003399] hover:bg-[#002266] text-white w-8 h-8"
-                  onClick={() => navigate('/istituzionale/associazioni?action=new')}
-                  title="Aggiungi Associazione"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Active */}
-          <Card className="border border-gray-200 shadow-sm bg-white group hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[#1a1a2e]">{stats?.attive || 0}</p>
-                    <p className="text-sm text-gray-500">Attive nell'Albo</p>
-                  </div>
-                </div>
-                <Button 
-                  size="icon"
-                  variant="ghost"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity bg-green-600 hover:bg-green-700 text-white w-8 h-8"
-                  onClick={() => navigate('/istituzionale/associazioni?filter=attiva')}
-                  title="Visualizza Attive"
-                >
-                  <TrendingUp className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Registrazioni Autonome */}
-          <Card className="border border-gray-200 shadow-sm bg-white group hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                    <UserPlus className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[#1a1a2e]">{stats?.registrazioniAutonome || 0}</p>
-                    <p className="text-sm text-gray-500">Registrazioni Autonome</p>
-                  </div>
-                </div>
-                <Button 
-                  size="icon"
-                  variant="ghost"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity bg-purple-600 hover:bg-purple-700 text-white w-8 h-8"
-                  onClick={() => navigate('/istituzionale/associazioni?filter=autonome')}
-                  title="Visualizza Registrazioni Autonome"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pending */}
-          <Card className="border border-gray-200 shadow-sm bg-white group hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[#1a1a2e]">{stats?.nuoveRichieste || 0}</p>
-                    <p className="text-sm text-gray-500">Da Validare</p>
-                  </div>
-                </div>
-                <Button 
-                  size="icon"
-                  variant="ghost"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity bg-yellow-600 hover:bg-yellow-700 text-white w-8 h-8"
-                  onClick={() => navigate('/istituzionale/associazioni?filter=precaricata')}
-                  title="Visualizza Da Validare"
-                >
-                  <Clock className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
 
-        {/* Task Management Panel - Full Width */}
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="Associazioni Totali"
+            value={stats?.totale || 0}
+            subtitle="Nell'albo comunale"
+            icon={Users}
+            colorVariant="primary"
+            href="/istituzionale/associazioni"
+            addHref="/istituzionale/associazioni?action=new"
+            animationDelay={0}
+          />
+          <StatCard
+            title="Attive nell'Albo"
+            value={stats?.attive || 0}
+            subtitle="Iscrizione attiva"
+            icon={TrendingUp}
+            colorVariant="green"
+            href="/istituzionale/associazioni?filter=attiva"
+            animationDelay={1}
+          />
+          <StatCard
+            title="Registrazioni Autonome"
+            value={stats?.registrazioniAutonome || 0}
+            subtitle="Auto-registrate"
+            icon={UserPlus}
+            colorVariant="purple"
+            href="/istituzionale/associazioni?filter=autonome"
+            animationDelay={2}
+          />
+          <StatCard
+            title="Da Validare"
+            value={stats?.nuoveRichieste || 0}
+            subtitle="In attesa di revisione"
+            icon={Clock}
+            colorVariant="amber"
+            href="/istituzionale/associazioni?filter=precaricata"
+            animationDelay={3}
+          />
+        </div>
+
+        {/* Task Management Panel */}
         <TaskManagementPanel />
 
         {/* Two Column Layout */}
@@ -242,27 +160,27 @@ const Scrivania = () => {
           <Card className="border border-gray-200 shadow-sm bg-white">
             <CardHeader className="pb-3 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold flex items-center gap-2 text-[#1a1a2e]">
-                  <div className="w-8 h-8 rounded-lg bg-[#003399] flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-white" />
+                <CardTitle className="text-base font-semibold flex items-center gap-2 text-gray-900">
+                  <div className="w-8 h-8 rounded-lg bg-[#0D9488]/10 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-[#0D9488]" />
                   </div>
                   Bandi Attivi
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button 
+                  <Button
                     size="icon"
                     variant="outline"
-                    className="w-8 h-8 border-[#003399] text-[#003399] hover:bg-[#003399] hover:text-white"
+                    className="w-8 h-8 border-[#0D9488] text-[#0D9488] hover:bg-[#0D9488] hover:text-white"
                     onClick={() => navigate('/istituzionale/progetti?action=new')}
                     title="Crea Nuovo Bando"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => navigate('/istituzionale/bandi')}
-                    className="text-[#003399] border-[#003399] hover:bg-[#003399]/5"
+                    className="text-[#0D9488] border-[#0D9488] hover:bg-[#0D9488]/5"
                   >
                     Vedi tutti
                   </Button>
@@ -275,11 +193,11 @@ const Scrivania = () => {
                   {bandiAttivi.map((bando) => (
                     <li key={bando.id} className="py-3 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-[#1a1a2e] line-clamp-1">{bando.titolo}</p>
+                        <p className="text-sm font-medium text-gray-900 line-clamp-1">{bando.titolo}</p>
                         <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                           <Calendar className="w-3 h-3" />
                           <span>
-                            Scadenza: {bando.data_chiusura 
+                            Scadenza: {bando.data_chiusura
                               ? format(new Date(bando.data_chiusura), 'dd/MM/yyyy', { locale: it })
                               : 'N/D'
                             }
@@ -296,9 +214,9 @@ const Scrivania = () => {
                 <div className="text-center py-8 text-gray-400">
                   <FileWarning className="w-10 h-10 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">Nessun bando attivo</p>
-                  <Button 
-                    size="sm" 
-                    className="mt-3 bg-[#003399] hover:bg-[#002266]"
+                  <Button
+                    size="sm"
+                    className="mt-3 bg-[#0D9488] hover:bg-[#0B7C71]"
                     onClick={() => navigate('/istituzionale/progetti?action=new')}
                   >
                     <Plus className="w-4 h-4 mr-1" />
@@ -316,7 +234,10 @@ const Scrivania = () => {
         {/* Recent Activity */}
         <Card className="border border-gray-200 shadow-sm bg-white">
           <CardHeader className="pb-3 border-b border-gray-100">
-            <CardTitle className="text-base font-semibold text-[#1a1a2e]">
+            <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Heart className="w-4 h-4 text-gray-500" />
+              </div>
               Attività Recente
             </CardTitle>
           </CardHeader>
@@ -379,7 +300,7 @@ const RecentActivity = () => {
       {logs.map((log) => (
         <li key={log.id} className="py-3 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-[#1a1a2e]">{getActionLabel(log.azione)}</p>
+            <p className="text-sm font-medium text-gray-900">{getActionLabel(log.azione)}</p>
             <p className="text-xs text-gray-500">
               {log.entity_type} • {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm', { locale: it })}
             </p>

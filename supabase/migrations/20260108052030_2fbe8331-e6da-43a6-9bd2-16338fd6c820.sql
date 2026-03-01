@@ -15,25 +15,31 @@ CREATE TABLE public.badge_categorie (
 ALTER TABLE public.badge_categorie ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for badge_categorie
-CREATE POLICY "Admins can manage badge_categorie" 
-ON public.badge_categorie 
-FOR ALL 
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage badge_categorie" 
+  ON public.badge_categorie 
+  FOR ALL 
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Anyone authenticated can view active badge_categorie" 
-ON public.badge_categorie 
-FOR SELECT 
-USING ((auth.uid() IS NOT NULL) AND (attivo = true));
+DO $$ BEGIN
+  CREATE POLICY "Anyone authenticated can view active badge_categorie" 
+  ON public.badge_categorie 
+  FOR SELECT 
+  USING ((auth.uid() IS NOT NULL) AND (attivo = true));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Add categoria_id to badge_tipi
 ALTER TABLE public.badge_tipi 
 ADD COLUMN categoria_id UUID REFERENCES public.badge_categorie(id) ON DELETE SET NULL;
 
 -- Create trigger for updated_at on badge_categorie
-CREATE TRIGGER update_badge_categorie_updated_at
-BEFORE UPDATE ON public.badge_categorie
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_badge_categorie_updated_at
+  BEFORE UPDATE ON public.badge_categorie
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Insert seed categories
 INSERT INTO public.badge_categorie (nome, descrizione, icona, colore, ordine) VALUES

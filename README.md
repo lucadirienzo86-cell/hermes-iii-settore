@@ -1,73 +1,191 @@
-# Welcome to your Lovable project
+# Trova Bandi — Documentazione del progetto
 
-## Project info
+Questo repository contiene l'applicazione frontend React (TypeScript, Vite) e le funzioni serverless organizzate per Supabase.
 
-**URL**: https://lovable.dev/projects/e2c13310-2202-4a7b-9033-2722e6301fde
+Contenuti principali di questo README:
+- Panoramica e architettura
+- Mappa file estesa
+- Utenze e ruoli
+- Connettori esterni e API
+- Variabili d'ambiente (`env.example`)
+- Setup locale, build e deploy
+- Diagrammi (Mermaid) + sorgenti in `docs/diagrams/`
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+**Breve panoramica**
 
-**Use Lovable**
+Stack tecnico principale:
+- Frontend: React + TypeScript, Vite
+- Styling: Tailwind CSS + componenti personalizzati
+- Data & Auth: Supabase (Auth, Postgres, Storage, Functions)
+- Fetch/caching: `@tanstack/react-query`
+- PWA: `vite-plugin-pwa`
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e2c13310-2202-4a7b-9033-2722e6301fde) and start prompting.
+Il codice frontend si trova in `src/`. Le funzioni server-side e le migrazioni sono nella cartella `supabase/`.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+**Diagramma architettura (alto livello)**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```mermaid
+flowchart LR
+	Browser[Browser / Client]
+	subgraph FE [Frontend]
+		A[React (Vite)]
+	end
+	subgraph SB [Supabase]
+		B[Auth]
+		C[Postgres DB]
+		D[Storage]
+		E[Functions]
+	end
+	Browser -->|UI / REST calls| A
+	A -->|supabase-js| B
+	A -->|supabase-js| C
+	A -->|invoke| E
+	E -->|fetch| External[External APIs (AI gateway, Creditsafe, RNA, ...)]
+	E --> C
+	E --> D
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+Sezioni rapide con file chiave
+- `package.json` — script e dipendenze
+- `vite.config.ts` — configurazioni e alias
+- `tsconfig.json` — TypeScript
+- `src/main.tsx` — entry
+- `src/App.tsx` — routing e guard
+- `src/contexts/AuthContext.tsx` — provider auth
+- `src/integrations/supabase/client.ts` — client supabase centralizzato
+- `supabase/functions/` — funzioni serverless
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Per una mappa completa dei file e descrizioni, vedi la sezione "File map estesa" più avanti e `docs/diagrams/file-map.mmd`.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+**Utenze e ruoli**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Ruoli principali identificati dal codice (da `RoleGuard` e `Protected*`):
+- `admin`
+- `associazione`
+- `comune` / `assessorato_terzo_settore`
+- `pro_loco`
+- `azienda` (app)
+- `docente`, `gestore` (ruoli di servizio)
+
+Le rotte protette si trovano e vengono applicate tramite componenti `ProtectedRoute`, `ProtectedAppRoute`, `ProtectedAssociazioneRoute`, `ProtectedIstituzionaleRoute`, `ProtectedProLocoRoute` in `src/components/`.
+
+---
+
+**Connettori esterni & API**
+
+- Supabase (client: `@supabase/supabase-js`) — Auth, DB, Storage, Functions
+- AI gateway: `https://ai.gateway.lovable.dev` (usato da funzioni di parsing/suggerimento)
+- Creditsafe API (funzioni `creditsafe-search`)
+- RNA API (`rna-api.legconsulenze.it`)
+
+Le integrazioni sono principalmente implementate nelle funzioni dentro `supabase/functions/` e nel client supabase centrale in `src/integrations/supabase/client.ts`.
+
+---
+
+**Variabili d'ambiente (vedi `env.example`)**
+
+File di esempio creato: `env.example` nella radice del repo. Copia come `.env` per lo sviluppo locale.
+
+---
+
+## File map estesa (selezione)
+
+- `src/` — codice frontend
+	- `src/main.tsx` — entry point
+	- `src/App.tsx` — routing principale e wrapper per le routes protette
+	- `src/contexts/AuthContext.tsx` — provider di autenticazione (Supabase)
+	- `src/integrations/supabase/client.ts` — crea e configura il client Supabase
+	- `src/components/` — componenti UI e guard (es. `ProtectedRoute.tsx`)
+	- `src/hooks/` — hook per fetch e logica (es. `useAuth`, `useBandi*`, `useAssociazioni*`)
+	- `src/pages/` — pagine suddivise per area (app, admin, associazione, pro-loco, istituzionale)
+
+- `supabase/` — funzioni serverless e migrazioni
+	- `supabase/functions/*` — funzioni invocate dal frontend per parsing, rna-check, creditsafe, suggerimenti AI
+	- `supabase/migrations/*` — migrazioni DB
+
+- `docs/` — (creato) contenente guide e diagrammi
+
+Per la mappa completa e la descrizione file-by-file, vedi `docs/diagrams/file-map.mmd`.
+
+---
+
+## Setup locale
+
+Prerequisiti:
+- Node.js (16+) and npm/yarn
+- `supabase` CLI per lavorare con le funzioni e le migrazioni (opzionale per sviluppo solo frontend)
+
+Installazione:
+
+```bash
+npm ci
+```
+
+Avvio in sviluppo:
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Build di produzione:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+npm run preview
+```
 
-**Use GitHub Codespaces**
+Per lavorare con funzioni e migrazioni Supabase (richiede `supabase` CLI):
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+supabase login
+supabase link --project-ref <PROJECT_REF>
+supabase functions deploy <function-name>
+supabase db push # o utilizzare le migrations in supabase/migrations
+```
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## Deploy e CI
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Esempio di flusso di deploy proposto (custom server/VM):
+1. Build frontend (`npm run build`)
+2. Upload `dist/` su webserver / CDN (rsync/s3/other)
+3. Applicare migrazioni DB e deploy funzioni con `supabase` CLI
 
-## How can I deploy this project?
+Ho incluso un esempio di workflow GitHub Actions in `.github/workflows/deploy.yml` (esempio, da adattare ai segreti del progetto).
 
-Simply open [Lovable](https://lovable.dev/projects/e2c13310-2202-4a7b-9033-2722e6301fde) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## Diagrammi (Mermaid) e risorse
 
-Yes, you can!
+I sorgenti Mermaid sono in `docs/diagrams/`:
+- `architettura.mmd` — architettura alto livello
+- `dataflow.mmd` — data flow frontend → functions → DB
+- `er_db.mmd` — schema ER (alto livello)
+- `sequence_login.mmd` — sequenza login / session
+- `file-map.mmd` — visual file map
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Ho anche aggiunto placeholder SVG/PNG in `docs/diagrams/` che puoi sostituire con esportazioni reali se preferisci.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## Domande aperte / gap
+
+- Dove vuoi ospitare il frontend in produzione (server/VM, Vercel, Netlify)?
+- Vuoi che generi i comandi CI adattati a Vercel/Netlify oltre al server/VM?
+- Fornisci le chiavi di servizio (Service Role key) per completare esempio di deploy automatizzato con accesso DB.
+
+---
+
+Se vuoi, procedo ora a creare `env.example`, `docs/deploy-supabase.md`, i file `docs/diagrams/*.mmd` e un workflow di esempio in `.github/workflows/deploy.yml`.
+
+---
+

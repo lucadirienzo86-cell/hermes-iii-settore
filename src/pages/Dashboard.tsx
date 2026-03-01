@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Building2, FileText, TrendingUp, GraduationCap, MapPin, Award, Network, Landmark, LayoutDashboard, Briefcase, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users, Building2, FileText, GraduationCap, MapPin, Award, Network, Landmark, LayoutDashboard, Briefcase } from "lucide-react";
 import { AdminApprovazioniSection } from "@/components/AdminApprovazioniSection";
 import { GestoreKpiDashboard } from "@/components/app/GestoreKpiDashboard";
 import { GestorePraticheKpiDashboard } from "@/components/app/GestorePraticheKpiDashboard";
@@ -367,123 +366,38 @@ const Dashboard = () => {
               ]}
             />
             
-            {/* Card Statistiche - Clickable with Add buttons */}
+            {/* Card Statistiche */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {/* Professionisti Attivi */}
-              <Card 
-                className="bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 animate-fade-in cursor-pointer group"
-                onClick={() => navigate('/docenti')}
-              >
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Professionisti Attivi
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      size="icon"
-                      variant="ghost"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary hover:bg-primary/90 text-primary-foreground w-7 h-7"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/docenti?action=new');
-                      }}
-                      title="Aggiungi Professionista"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Users className="h-5 w-5 text-primary" />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-foreground mb-2">
-                    {stats.gestori}
-                  </div>
-                  <div className="flex items-center gap-1 text-green-600 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Clicca per vedere l'elenco</span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Aziende Registrate */}
-              <Card 
-                className="bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 animate-fade-in cursor-pointer group" 
-                style={{ animationDelay: '100ms' }}
-                onClick={() => navigate('/aziende')}
-              >
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Aziende Registrate
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      size="icon"
-                      variant="ghost"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary hover:bg-primary/90 text-primary-foreground w-7 h-7"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/aziende?action=new');
-                      }}
-                      title="Aggiungi Azienda"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Building2 className="h-5 w-5 text-primary" />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-foreground mb-2">
-                    {stats.aziende}
-                  </div>
-                  <div className="flex items-center gap-1 text-green-600 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Clicca per vedere l'elenco</span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Pratiche in Corso */}
-              <Card 
-                className="bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 animate-fade-in cursor-pointer group" 
-                style={{ animationDelay: '200ms' }}
-                onClick={() => navigate('/pratiche')}
-              >
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Pratiche in Corso
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      size="icon"
-                      variant="ghost"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary hover:bg-primary/90 text-primary-foreground w-7 h-7"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/pratiche?action=new');
-                      }}
-                      title="Nuova Pratica"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-foreground mb-2">
-                    {stats.pratiche}
-                  </div>
-                  <div className="flex items-center gap-1 text-green-600 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Clicca per vedere l'elenco</span>
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="Professionisti Attivi"
+                value={stats.gestori}
+                subtitle="Professionisti registrati"
+                icon={Users}
+                colorVariant="primary"
+                href="/docenti"
+                addHref="/docenti?action=new"
+                animationDelay={0}
+              />
+              <StatCard
+                title="Aziende Registrate"
+                value={stats.aziende}
+                subtitle="Aziende in piattaforma"
+                icon={Building2}
+                colorVariant="blue"
+                href="/aziende"
+                addHref="/aziende?action=new"
+                animationDelay={1}
+              />
+              <StatCard
+                title="Pratiche in Corso"
+                value={stats.pratiche}
+                subtitle="Pratiche aperte"
+                icon={FileText}
+                colorVariant="amber"
+                href="/pratiche"
+                addHref="/pratiche?action=new"
+                animationDelay={2}
+              />
             </div>
             
             {/* Riepilogo Badge Formativi */}

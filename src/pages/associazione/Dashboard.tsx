@@ -5,9 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAssociazione, useProLocoInfo } from '@/hooks/useAssociazione';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  Users, 
-  LogOut, 
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Users,
+  LogOut,
   User,
   CheckCircle,
   Clock,
@@ -23,6 +25,72 @@ const AssociazioneDashboardPage = () => {
   const { signOut, profile } = useAuth();
   const { data: associazione, isLoading } = useAssociazione();
   const { data: proLoco } = useProLocoInfo(associazione?.pro_loco_id || null);
+
+  // Fetch real stats from DB
+  const { data: bandiCount } = useQuery({
+    queryKey: ['assoc-bandi-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('bandi_terzo_settore')
+        .select('*', { count: 'exact', head: true })
+        .eq('stato', 'attivo');
+      return count ?? 0;
+    },
+  });
+
+  const { data: progettiCount } = useQuery({
+    queryKey: ['assoc-progetti-count', associazione?.id],
+    enabled: !!associazione?.id,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('progetti_contabili')
+        .select('*', { count: 'exact', head: true })
+        .eq('associazione_id', associazione!.id)
+        .eq('stato', 'attivo');
+      return count ?? 0;
+    },
+  });
+
+  const { data: documentiCount } = useQuery({
+    queryKey: ['assoc-documenti-count', associazione?.id],
+    enabled: !!associazione?.id,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('documenti_contabili')
+        .select('movimenti_contabili!inner(associazione_id)', { count: 'exact', head: true })
+        .eq('movimenti_contabili.associazione_id', associazione!.id);
+      return count ?? 0;
+    },
+  });
+
+  const { data: abbonamento } = useQuery({
+    queryKey: ['assoc-abbonamento', associazione?.id],
+    enabled: !!associazione?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('abbonamenti_contabilita')
+        .select('stato')
+        .eq('associazione_id', associazione!.id)
+        .eq('stato', 'attivo')
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: ultimoRendiconto } = useQuery({
+    queryKey: ['assoc-rendiconto', associazione?.id],
+    enabled: !!associazione?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('rendiconti_ets')
+        .select('stato, created_at')
+        .eq('associazione_id', associazione!.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
 
   // Redirect to onboarding if not completed
   useEffect(() => {
@@ -56,6 +124,13 @@ const AssociazioneDashboardPage = () => {
           </Badge>
         );
     }
+  };
+
+  const getRendicontoStato = (): 'completato' | 'in_lavorazione' | 'da_fare' => {
+    if (!ultimoRendiconto) return 'da_fare';
+    if (ultimoRendiconto.stato === 'definitivo') return 'completato';
+    if (ultimoRendiconto.stato === 'in_elaborazione') return 'in_lavorazione';
+    return 'in_lavorazione';
   };
 
   if (isLoading) {
@@ -104,7 +179,7 @@ const AssociazioneDashboardPage = () => {
               <p className="mb-3">
                 Per accedere a contributi e patrocini, richiedi l'iscrizione all'Albo Comunale.
               </p>
-              <Button 
+              <Button
                 variant="outline"
                 size="sm"
                 className="border-amber-400 text-amber-700 hover:bg-amber-100"
@@ -137,15 +212,15 @@ const AssociazioneDashboardPage = () => {
           </p>
         </div>
 
-        {/* Dashboard Cards Grid */}
-        <AssociazioneDashboardCards 
-          bandiAperti={3}
-          progettiAttivi={1}
-          ultimoRendiconto={{ stato: 'in_lavorazione' }}
-          abbonamentoAttivo={true}
-          documentiCaricati={12}
-          notifichePendenti={2}
-          scadenzeImminenti={1}
+        {/* Dashboard Cards Grid — dati reali da Supabase */}
+        <AssociazioneDashboardCards
+          bandiAperti={bandiCount ?? 0}
+          progettiAttivi={progettiCount ?? 0}
+          ultimoRendiconto={{ stato: getRendicontoStato() }}
+          abbonamentoAttivo={!!abbonamento}
+          documentiCaricati={documentiCount ?? 0}
+          notifichePendenti={0}
+          scadenzeImminenti={0}
         />
 
         {/* Status Footer */}
@@ -189,7 +264,7 @@ const AssociazioneDashboardPage = () => {
           <div className="text-center">
             <p className="text-sm text-muted-foreground">RUNTS</p>
             <Badge variant={associazione?.stato_runts === 'verificato' ? 'default' : 'secondary'} className="mt-1">
-              {associazione?.stato_runts === 'verificato' ? 'Verificato' : 
+              {associazione?.stato_runts === 'verificato' ? 'Verificato' :
                associazione?.stato_runts === 'non_iscritto' ? 'Non iscritto' : 'Dichiarato'}
             </Badge>
           </div>

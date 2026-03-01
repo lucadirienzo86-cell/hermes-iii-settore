@@ -12,14 +12,14 @@ ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
 -- 2. PAYMENT TYPES ENUMS
 -- =============================================
 
-DO $$ 
+DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_link_type') THEN
     CREATE TYPE public.payment_link_type AS ENUM ('donazione', 'evento', 'prodotto', 'quota_associativa');
   END IF;
 END $$;
 
-DO $$ 
+DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
     CREATE TYPE public.payment_status AS ENUM ('pending', 'success', 'failed', 'expired', 'refunded');
@@ -169,103 +169,123 @@ ALTER TABLE public.quote_associative ENABLE ROW LEVEL SECURITY;
 -- =============================================
 
 -- Payment Links - based on associazione.profile_id
-CREATE POLICY "Owners can manage their payment links"
-ON public.payment_links FOR ALL
-USING (
-    EXISTS (
-        SELECT 1 FROM public.associazioni_terzo_settore a 
-        WHERE a.id = payment_links.associazione_id AND a.profile_id = auth.uid()
-    )
-    OR EXISTS (
-        SELECT 1 FROM public.pro_loco p 
-        WHERE p.id = payment_links.pro_loco_id AND p.profile_id = auth.uid()
-    )
-);
+DO $$ BEGIN
+  CREATE POLICY "Owners can manage their payment links"
+  ON public.payment_links FOR ALL
+  USING (
+      EXISTS (
+          SELECT 1 FROM public.associazioni_terzo_settore a 
+          WHERE a.id = payment_links.associazione_id AND a.profile_id = auth.uid()
+      )
+      OR EXISTS (
+          SELECT 1 FROM public.pro_loco p 
+          WHERE p.id = payment_links.pro_loco_id AND p.profile_id = auth.uid()
+      )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Public can view active payment links"
-ON public.payment_links FOR SELECT
-USING (attivo = true AND (scadenza IS NULL OR scadenza > now()));
+DO $$ BEGIN
+  CREATE POLICY "Public can view active payment links"
+  ON public.payment_links FOR SELECT
+  USING (attivo = true AND (scadenza IS NULL OR scadenza > now()));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Pagamenti
-CREATE POLICY "Owners can view their payments"
-ON public.pagamenti FOR SELECT
-USING (
-    EXISTS (
-        SELECT 1 FROM public.associazioni_terzo_settore a 
-        WHERE a.id = pagamenti.associazione_id AND a.profile_id = auth.uid()
-    )
-    OR EXISTS (
-        SELECT 1 FROM public.pro_loco p 
-        WHERE p.id = pagamenti.pro_loco_id AND p.profile_id = auth.uid()
-    )
-    OR public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Owners can view their payments"
+  ON public.pagamenti FOR SELECT
+  USING (
+      EXISTS (
+          SELECT 1 FROM public.associazioni_terzo_settore a 
+          WHERE a.id = pagamenti.associazione_id AND a.profile_id = auth.uid()
+      )
+      OR EXISTS (
+          SELECT 1 FROM public.pro_loco p 
+          WHERE p.id = pagamenti.pro_loco_id AND p.profile_id = auth.uid()
+      )
+      OR public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Donazioni
-CREATE POLICY "Associations can view their donations"
-ON public.donazioni FOR SELECT
-USING (
-    EXISTS (
-        SELECT 1 FROM public.associazioni_terzo_settore a 
-        WHERE a.id = donazioni.associazione_id AND a.profile_id = auth.uid()
-    )
-    OR public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Associations can view their donations"
+  ON public.donazioni FOR SELECT
+  USING (
+      EXISTS (
+          SELECT 1 FROM public.associazioni_terzo_settore a 
+          WHERE a.id = donazioni.associazione_id AND a.profile_id = auth.uid()
+      )
+      OR public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Eventi
-CREATE POLICY "Owners can manage their events"
-ON public.eventi_associazione FOR ALL
-USING (
-    EXISTS (
-        SELECT 1 FROM public.associazioni_terzo_settore a 
-        WHERE a.id = eventi_associazione.associazione_id AND a.profile_id = auth.uid()
-    )
-    OR EXISTS (
-        SELECT 1 FROM public.pro_loco p 
-        WHERE p.id = eventi_associazione.pro_loco_id AND p.profile_id = auth.uid()
-    )
-);
+DO $$ BEGIN
+  CREATE POLICY "Owners can manage their events"
+  ON public.eventi_associazione FOR ALL
+  USING (
+      EXISTS (
+          SELECT 1 FROM public.associazioni_terzo_settore a 
+          WHERE a.id = eventi_associazione.associazione_id AND a.profile_id = auth.uid()
+      )
+      OR EXISTS (
+          SELECT 1 FROM public.pro_loco p 
+          WHERE p.id = eventi_associazione.pro_loco_id AND p.profile_id = auth.uid()
+      )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Public can view active events"
-ON public.eventi_associazione FOR SELECT
-USING (attivo = true);
+DO $$ BEGIN
+  CREATE POLICY "Public can view active events"
+  ON public.eventi_associazione FOR SELECT
+  USING (attivo = true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Prodotti
-CREATE POLICY "Owners can manage their products"
-ON public.prodotti_associazione FOR ALL
-USING (
-    EXISTS (
-        SELECT 1 FROM public.associazioni_terzo_settore a 
-        WHERE a.id = prodotti_associazione.associazione_id AND a.profile_id = auth.uid()
-    )
-    OR EXISTS (
-        SELECT 1 FROM public.pro_loco p 
-        WHERE p.id = prodotti_associazione.pro_loco_id AND p.profile_id = auth.uid()
-    )
-);
+DO $$ BEGIN
+  CREATE POLICY "Owners can manage their products"
+  ON public.prodotti_associazione FOR ALL
+  USING (
+      EXISTS (
+          SELECT 1 FROM public.associazioni_terzo_settore a 
+          WHERE a.id = prodotti_associazione.associazione_id AND a.profile_id = auth.uid()
+      )
+      OR EXISTS (
+          SELECT 1 FROM public.pro_loco p 
+          WHERE p.id = prodotti_associazione.pro_loco_id AND p.profile_id = auth.uid()
+      )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Public can view active products"
-ON public.prodotti_associazione FOR SELECT
-USING (attivo = true);
+DO $$ BEGIN
+  CREATE POLICY "Public can view active products"
+  ON public.prodotti_associazione FOR SELECT
+  USING (attivo = true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Quote
-CREATE POLICY "Pro Loco can manage their quotes"
-ON public.quote_associative FOR ALL
-USING (
-    EXISTS (
-        SELECT 1 FROM public.pro_loco p 
-        WHERE p.id = quote_associative.pro_loco_id AND p.profile_id = auth.uid()
-    )
-);
+DO $$ BEGIN
+  CREATE POLICY "Pro Loco can manage their quotes"
+  ON public.quote_associative FOR ALL
+  USING (
+      EXISTS (
+          SELECT 1 FROM public.pro_loco p 
+          WHERE p.id = quote_associative.pro_loco_id AND p.profile_id = auth.uid()
+      )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Associations can view their quotes"
-ON public.quote_associative FOR SELECT
-USING (
-    EXISTS (
-        SELECT 1 FROM public.associazioni_terzo_settore a 
-        WHERE a.id = quote_associative.associazione_id AND a.profile_id = auth.uid()
-    )
-);
+DO $$ BEGIN
+  CREATE POLICY "Associations can view their quotes"
+  ON public.quote_associative FOR SELECT
+  USING (
+      EXISTS (
+          SELECT 1 FROM public.associazioni_terzo_settore a 
+          WHERE a.id = quote_associative.associazione_id AND a.profile_id = auth.uid()
+      )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- 10. INDEXES
@@ -288,34 +308,46 @@ CREATE INDEX IF NOT EXISTS idx_quote_pro_loco ON public.quote_associative(pro_lo
 -- =============================================
 
 DROP TRIGGER IF EXISTS update_user_roles_updated_at ON public.user_roles;
-CREATE TRIGGER update_user_roles_updated_at
-BEFORE UPDATE ON public.user_roles
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_user_roles_updated_at
+  BEFORE UPDATE ON public.user_roles
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 DROP TRIGGER IF EXISTS update_payment_links_updated_at ON public.payment_links;
-CREATE TRIGGER update_payment_links_updated_at
-BEFORE UPDATE ON public.payment_links
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_payment_links_updated_at
+  BEFORE UPDATE ON public.payment_links
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 DROP TRIGGER IF EXISTS update_pagamenti_updated_at ON public.pagamenti;
-CREATE TRIGGER update_pagamenti_updated_at
-BEFORE UPDATE ON public.pagamenti
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_pagamenti_updated_at
+  BEFORE UPDATE ON public.pagamenti
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 DROP TRIGGER IF EXISTS update_eventi_associazione_updated_at ON public.eventi_associazione;
-CREATE TRIGGER update_eventi_associazione_updated_at
-BEFORE UPDATE ON public.eventi_associazione
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_eventi_associazione_updated_at
+  BEFORE UPDATE ON public.eventi_associazione
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 DROP TRIGGER IF EXISTS update_prodotti_associazione_updated_at ON public.prodotti_associazione;
-CREATE TRIGGER update_prodotti_associazione_updated_at
-BEFORE UPDATE ON public.prodotti_associazione
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_prodotti_associazione_updated_at
+  BEFORE UPDATE ON public.prodotti_associazione
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 DROP TRIGGER IF EXISTS update_quote_associative_updated_at ON public.quote_associative;
-CREATE TRIGGER update_quote_associative_updated_at
-BEFORE UPDATE ON public.quote_associative
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_quote_associative_updated_at
+  BEFORE UPDATE ON public.quote_associative
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- 12. HELPER FUNCTION FOR USER ROLE

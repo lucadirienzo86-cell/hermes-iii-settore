@@ -17,25 +17,33 @@ CREATE TABLE public.richieste_contatto (
 ALTER TABLE public.richieste_contatto ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Anyone can insert (public form)
-CREATE POLICY "Anyone can submit contact requests"
-ON public.richieste_contatto
-FOR INSERT
-WITH CHECK (true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone can submit contact requests"
+  ON public.richieste_contatto
+  FOR INSERT
+  WITH CHECK (true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy: Only admins can view all requests
-CREATE POLICY "Admins can view all contact requests"
-ON public.richieste_contatto
-FOR SELECT
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can view all contact requests"
+  ON public.richieste_contatto
+  FOR SELECT
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy: Only admins can update requests
-CREATE POLICY "Admins can update contact requests"
-ON public.richieste_contatto
-FOR UPDATE
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can update contact requests"
+  ON public.richieste_contatto
+  FOR UPDATE
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy: Only admins can delete requests
-CREATE POLICY "Admins can delete contact requests"
-ON public.richieste_contatto
-FOR DELETE
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can delete contact requests"
+  ON public.richieste_contatto
+  FOR DELETE
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

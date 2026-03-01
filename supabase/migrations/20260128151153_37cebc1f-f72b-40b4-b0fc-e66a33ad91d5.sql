@@ -21,7 +21,9 @@ $$;
 DROP POLICY IF EXISTS "Gestori pratiche can view assigned aziende" ON public.aziende;
 
 -- 3. Creare nuova policy che usa la funzione security definer
-CREATE POLICY "Gestori pratiche can view assigned aziende"
-ON public.aziende
-FOR SELECT
-USING (id IN (SELECT public.get_aziende_ids_for_gestore_pratiche(auth.uid())));
+DO $$ BEGIN
+  CREATE POLICY "Gestori pratiche can view assigned aziende"
+  ON public.aziende
+  FOR SELECT
+  USING (id IN (SELECT public.get_aziende_ids_for_gestore_pratiche(auth.uid())));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

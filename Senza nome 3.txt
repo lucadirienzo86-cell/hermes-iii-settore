@@ -1,0 +1,30 @@
+INSTALLAZIONE AGENTI 
+
+Attiva immediatamente il mio team di agenti con nomi greci appropriati alle specializzazioni (Hermes e Athena sono già occupati da altri compiti, quindi usiamo nomi alternativi).
+
+Ecco i ruoli essenziali e i nomi scelti:
+
+1. Apollo (Frontend & Realtime)  
+   Perché Apollo: dio della luce, della chiarezza, della velocità e della profezia → rappresenta il codice frontend luminoso, veloce e che "prevede" gli aggiornamenti realtime.  
+   Compito essenziale: scrivere/aggiornare codice React + Vite + Tailwind + @dnd-kit, gestire realtime subscriptions Supabase, ottimizzare drag & drop e performance.
+
+2. Aphrodite (UX & Design)  
+   Perché Aphrodite: dea della bellezza, dell'armonia e del desiderio → incarna l'estetica appealing, l'armonia visiva e l'attrattiva per gli utenti creator.  
+   Compito essenziale: proporre layout mobile-first, touch experience, card design accattivante per influencer, validare usability e piacere visivo.
+
+3. Prometheus (Backend & Database)  
+   Perché Prometheus: il titano che donò il fuoco (tecnologia) agli uomini → simbolo di innovazione sicura e di protezione della conoscenza (dati).  
+   Compito essenziale: gestire Supabase (schema, RLS, realtime channels), SQL, security, aggiungere campi (due_date, reminder).
+
+4. Mnemosyne (Influencer & Product)  
+   Perché Mnemosyne: dea della memoria, madre delle Muse → rappresenta visione creativa a lungo termine, ispirazione e memoria delle esigenze reali degli influencer.  
+   Compito essenziale: ragionare come creator reale, validare feature (reminder scadenze, allegati media, export board), suggerire roadmap, feedback "come creator direi che…".
+
+Regole team obbligatorie:
+- Tutti usano Sonnet 4.6
+- Comunicano via mailbox interna
+- Auto-accept edits (shift+tab) sempre attivi
+- Priorità assoluta: realtime sync + mobile usability + reminder scadenze
+- Inizia ORA aggiungendo campo due_date alla tabella influencers e realtime listener in App.jsx
+
+Procedi in parallelo e mostra subito i primi cambiamenti.

@@ -11,22 +11,28 @@ CREATE TABLE public.tipi_agevolazione_options (
 ALTER TABLE public.tipi_agevolazione_options ENABLE ROW LEVEL SECURITY;
 
 -- Admins can manage
-CREATE POLICY "Admins can manage tipi agevolazione options" 
-ON public.tipi_agevolazione_options 
-FOR ALL 
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage tipi agevolazione options" 
+  ON public.tipi_agevolazione_options 
+  FOR ALL 
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Editori can manage
-CREATE POLICY "Editori can manage tipi agevolazione options" 
-ON public.tipi_agevolazione_options 
-FOR ALL 
-USING (has_role(auth.uid(), 'editore'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Editori can manage tipi agevolazione options" 
+  ON public.tipi_agevolazione_options 
+  FOR ALL 
+  USING (has_role(auth.uid(), 'editore'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Anyone authenticated can view
-CREATE POLICY "Anyone authenticated can view tipi agevolazione options" 
-ON public.tipi_agevolazione_options 
-FOR SELECT 
-USING (auth.uid() IS NOT NULL);
+DO $$ BEGIN
+  CREATE POLICY "Anyone authenticated can view tipi agevolazione options" 
+  ON public.tipi_agevolazione_options 
+  FOR SELECT 
+  USING (auth.uid() IS NOT NULL);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Insert default values
 INSERT INTO public.tipi_agevolazione_options (nome, ordine) VALUES 

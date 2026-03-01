@@ -569,11 +569,11 @@ serve(async (req) => {
     });
 
     // Genera motivazioni con AI se disponibile API key
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const googleAiKey = Deno.env.get('GOOGLE_AI_KEY');
     let suggerimentiConMotivazione = suggerimentiFinali;
     let motivazioneGenerale = "";
 
-    if (lovableApiKey && suggerimentiFinali.length > 0) {
+    if (googleAiKey && suggerimentiFinali.length > 0) {
       try {
         const prompt = `Sei un esperto di formazione aziendale italiana. Dato un'azienda con i seguenti codici ATECO: ${codiciNormalizzati.join(', ')}${descrizione_attivita ? ` che si occupa di: ${descrizione_attivita}` : ''}${dimensione_azienda ? ` di tipo ${dimensione_azienda}` : ''}.
 
@@ -591,14 +591,14 @@ Rispondi SOLO con un JSON valido in questo formato:
   "motivazione_generale": "testo motivazione generale..."
 }`;
 
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${lovableApiKey}`,
+            'Authorization': `Bearer ${googleAiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: 'gemini-2.0-flash',
             messages: [
               { role: 'user', content: prompt }
             ],

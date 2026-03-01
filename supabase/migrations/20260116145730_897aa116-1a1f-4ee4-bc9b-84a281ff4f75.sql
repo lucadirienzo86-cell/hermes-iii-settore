@@ -39,41 +39,57 @@ ALTER TABLE public.push_notifications_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bandi_notificati ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for push_subscriptions
-CREATE POLICY "Users can view their own subscriptions"
-ON public.push_subscriptions FOR SELECT
-USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view their own subscriptions"
+  ON public.push_subscriptions FOR SELECT
+  USING (auth.uid() = user_id);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Users can create their own subscriptions"
-ON public.push_subscriptions FOR INSERT
-WITH CHECK (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can create their own subscriptions"
+  ON public.push_subscriptions FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Users can delete their own subscriptions"
-ON public.push_subscriptions FOR DELETE
-USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can delete their own subscriptions"
+  ON public.push_subscriptions FOR DELETE
+  USING (auth.uid() = user_id);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies for push_notifications_log
-CREATE POLICY "Users can view their own notifications"
-ON public.push_notifications_log FOR SELECT
-USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view their own notifications"
+  ON public.push_notifications_log FOR SELECT
+  USING (auth.uid() = user_id);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Users can update their own notifications"
-ON public.push_notifications_log FOR UPDATE
-USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can update their own notifications"
+  ON public.push_notifications_log FOR UPDATE
+  USING (auth.uid() = user_id);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies for bandi_notificati
-CREATE POLICY "Users can view their own notified bandi"
-ON public.bandi_notificati FOR SELECT
-USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view their own notified bandi"
+  ON public.bandi_notificati FOR SELECT
+  USING (auth.uid() = user_id);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Users can insert their own notified bandi"
-ON public.bandi_notificati FOR INSERT
-WITH CHECK (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can insert their own notified bandi"
+  ON public.bandi_notificati FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Trigger per updated_at
-CREATE TRIGGER update_push_subscriptions_updated_at
-BEFORE UPDATE ON public.push_subscriptions
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_push_subscriptions_updated_at
+  BEFORE UPDATE ON public.push_subscriptions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Indici per performance
 CREATE INDEX idx_push_subscriptions_user_id ON public.push_subscriptions(user_id);

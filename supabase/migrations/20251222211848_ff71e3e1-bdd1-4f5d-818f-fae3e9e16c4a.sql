@@ -45,39 +45,49 @@ CREATE INDEX idx_badge_assegnazioni_tipo ON public.badge_assegnazioni(badge_tipo
 -- RLS per badge_tipi
 ALTER TABLE public.badge_tipi ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage badge_tipi"
-ON public.badge_tipi FOR ALL
-USING (has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage badge_tipi"
+  ON public.badge_tipi FOR ALL
+  USING (has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Anyone authenticated can view active badge_tipi"
-ON public.badge_tipi FOR SELECT
-USING (auth.uid() IS NOT NULL AND attivo = true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone authenticated can view active badge_tipi"
+  ON public.badge_tipi FOR SELECT
+  USING (auth.uid() IS NOT NULL AND attivo = true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS per badge_assegnazioni
 ALTER TABLE public.badge_assegnazioni ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage badge_assegnazioni"
-ON public.badge_assegnazioni FOR ALL
-USING (has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage badge_assegnazioni"
+  ON public.badge_assegnazioni FOR ALL
+  USING (has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Users can view their own badges"
-ON public.badge_assegnazioni FOR SELECT
-USING (
-  -- Docenti vedono i propri badge
-  (docente_id IN (SELECT id FROM public.docenti WHERE profile_id = auth.uid()))
-  OR
-  -- Collaboratori vedono i propri badge
-  (collaboratore_id IN (SELECT id FROM public.collaboratori WHERE profile_id = auth.uid()))
-  OR
-  -- Aziende vedono i propri badge
-  (azienda_id IN (SELECT id FROM public.aziende WHERE profile_id = auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Users can view their own badges"
+  ON public.badge_assegnazioni FOR SELECT
+  USING (
+    -- Docenti vedono i propri badge
+    (docente_id IN (SELECT id FROM public.docenti WHERE profile_id = auth.uid()))
+    OR
+    -- Collaboratori vedono i propri badge
+    (collaboratore_id IN (SELECT id FROM public.collaboratori WHERE profile_id = auth.uid()))
+    OR
+    -- Aziende vedono i propri badge
+    (azienda_id IN (SELECT id FROM public.aziende WHERE profile_id = auth.uid()))
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Trigger per updated_at
-CREATE TRIGGER update_badge_tipi_updated_at
-BEFORE UPDATE ON public.badge_tipi
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_badge_tipi_updated_at
+  BEFORE UPDATE ON public.badge_tipi
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- FASE 4: Fondi Interprofessionali
@@ -148,77 +158,99 @@ CREATE INDEX idx_aziende_fondi_fondo ON public.aziende_fondi(fondo_id);
 -- RLS per fondi_interprofessionali
 ALTER TABLE public.fondi_interprofessionali ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage fondi"
-ON public.fondi_interprofessionali FOR ALL
-USING (has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage fondi"
+  ON public.fondi_interprofessionali FOR ALL
+  USING (has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Anyone authenticated can view active fondi"
-ON public.fondi_interprofessionali FOR SELECT
-USING (auth.uid() IS NOT NULL AND attivo = true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone authenticated can view active fondi"
+  ON public.fondi_interprofessionali FOR SELECT
+  USING (auth.uid() IS NOT NULL AND attivo = true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS per avvisi_fondi
 ALTER TABLE public.avvisi_fondi ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins and editori can manage avvisi"
-ON public.avvisi_fondi FOR ALL
-USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'editore'));
+DO $$ BEGIN
+  CREATE POLICY "Admins and editori can manage avvisi"
+  ON public.avvisi_fondi FOR ALL
+  USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'editore'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Anyone authenticated can view active avvisi"
-ON public.avvisi_fondi FOR SELECT
-USING (auth.uid() IS NOT NULL AND attivo = true);
+DO $$ BEGIN
+  CREATE POLICY "Anyone authenticated can view active avvisi"
+  ON public.avvisi_fondi FOR SELECT
+  USING (auth.uid() IS NOT NULL AND attivo = true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS per aziende_fondi
 ALTER TABLE public.aziende_fondi ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage aziende_fondi"
-ON public.aziende_fondi FOR ALL
-USING (has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage aziende_fondi"
+  ON public.aziende_fondi FOR ALL
+  USING (has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Gestori can manage their aziende fondi"
-ON public.aziende_fondi FOR ALL
-USING (
-  azienda_id IN (
-    SELECT id FROM public.aziende 
-    WHERE inserita_da_gestore_id IN (
-      SELECT id FROM public.gestori WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Gestori can manage their aziende fondi"
+  ON public.aziende_fondi FOR ALL
+  USING (
+    azienda_id IN (
+      SELECT id FROM public.aziende 
+      WHERE inserita_da_gestore_id IN (
+        SELECT id FROM public.gestori WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Collaboratori can manage their aziende fondi"
-ON public.aziende_fondi FOR ALL
-USING (
-  azienda_id IN (
-    SELECT id FROM public.aziende 
-    WHERE inserita_da_collaboratore_id IN (
-      SELECT id FROM public.collaboratori WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Collaboratori can manage their aziende fondi"
+  ON public.aziende_fondi FOR ALL
+  USING (
+    azienda_id IN (
+      SELECT id FROM public.aziende 
+      WHERE inserita_da_collaboratore_id IN (
+        SELECT id FROM public.collaboratori WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Aziende can view their own fondi"
-ON public.aziende_fondi FOR SELECT
-USING (
-  azienda_id IN (
-    SELECT id FROM public.aziende WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Aziende can view their own fondi"
+  ON public.aziende_fondi FOR SELECT
+  USING (
+    azienda_id IN (
+      SELECT id FROM public.aziende WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Triggers per updated_at
-CREATE TRIGGER update_fondi_interprofessionali_updated_at
-BEFORE UPDATE ON public.fondi_interprofessionali
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_fondi_interprofessionali_updated_at
+  BEFORE UPDATE ON public.fondi_interprofessionali
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_avvisi_fondi_updated_at
-BEFORE UPDATE ON public.avvisi_fondi
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_avvisi_fondi_updated_at
+  BEFORE UPDATE ON public.avvisi_fondi
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_aziende_fondi_updated_at
-BEFORE UPDATE ON public.aziende_fondi
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_aziende_fondi_updated_at
+  BEFORE UPDATE ON public.aziende_fondi
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Inserisco alcuni fondi interprofessionali di esempio
 INSERT INTO public.fondi_interprofessionali (nome, codice, descrizione, sito_web, attivo) VALUES

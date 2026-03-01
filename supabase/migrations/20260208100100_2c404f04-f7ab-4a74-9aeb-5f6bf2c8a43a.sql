@@ -67,37 +67,43 @@ CREATE INDEX IF NOT EXISTS idx_associazioni_stato_albo ON associazioni_terzo_set
 ALTER TABLE comunicazioni_istituzionali ENABLE ROW LEVEL SECURITY;
 
 -- Policy per utenti Comune/Assessorato (lettura e scrittura)
-CREATE POLICY "Comune e Assessorato possono gestire comunicazioni"
-ON comunicazioni_istituzionali
-FOR ALL
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-)
-WITH CHECK (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Comune e Assessorato possono gestire comunicazioni"
+  ON comunicazioni_istituzionali
+  FOR ALL
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  )
+  WITH CHECK (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy per associazioni (solo lettura delle proprie comunicazioni)
-CREATE POLICY "Associazioni vedono le proprie comunicazioni"
-ON comunicazioni_istituzionali
-FOR SELECT
-TO authenticated
-USING (
-  associazione_id IN (
-    SELECT id FROM associazioni_terzo_settore WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Associazioni vedono le proprie comunicazioni"
+  ON comunicazioni_istituzionali
+  FOR SELECT
+  TO authenticated
+  USING (
+    associazione_id IN (
+      SELECT id FROM associazioni_terzo_settore WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Trigger per updated_at
-CREATE TRIGGER update_comunicazioni_updated_at
-  BEFORE UPDATE ON comunicazioni_istituzionali
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_comunicazioni_updated_at
+    BEFORE UPDATE ON comunicazioni_istituzionali
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Funzione per verificare completezza campi associazione
 CREATE OR REPLACE FUNCTION check_associazione_campi_completi()

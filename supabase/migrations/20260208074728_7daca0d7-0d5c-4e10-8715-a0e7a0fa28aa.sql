@@ -1,22 +1,30 @@
 -- Tipologie associazioni Terzo Settore
-CREATE TYPE public.tipologia_associazione AS ENUM ('APS', 'ETS', 'ODV', 'Cooperativa', 'Altro');
+DO $$ BEGIN
+  CREATE TYPE public.tipologia_associazione AS ENUM ('APS', 'ETS', 'ODV', 'Cooperativa', 'Altro');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Stato RUNTS
-CREATE TYPE public.stato_runts AS ENUM ('dichiarato', 'verificato', 'non_iscritto');
+DO $$ BEGIN
+  CREATE TYPE public.stato_runts AS ENUM ('dichiarato', 'verificato', 'non_iscritto');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Stato progetto Terzo Settore
-CREATE TYPE public.stato_progetto_ts AS ENUM (
-  'candidatura_inviata', 
-  'in_valutazione', 
-  'approvato', 
-  'respinto', 
-  'avviato', 
-  'in_corso', 
-  'completato'
-);
+DO $$ BEGIN
+  CREATE TYPE public.stato_progetto_ts AS ENUM (
+    'candidatura_inviata', 
+    'in_valutazione', 
+    'approvato', 
+    'respinto', 
+    'avviato', 
+    'in_corso', 
+    'completato'
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Stato bando Terzo Settore
-CREATE TYPE public.stato_bando_ts AS ENUM ('bozza', 'attivo', 'in_chiusura', 'concluso');
+DO $$ BEGIN
+  CREATE TYPE public.stato_bando_ts AS ENUM ('bozza', 'attivo', 'in_chiusura', 'concluso');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Tabella Associazioni Terzo Settore
 CREATE TABLE public.associazioni_terzo_settore (
@@ -123,202 +131,242 @@ ALTER TABLE public.attivita_territorio ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comunicazioni_terzo_settore ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies per Associazioni Terzo Settore
-CREATE POLICY "ts_assoc_comune_select"
-ON public.associazioni_terzo_settore FOR SELECT
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin') OR
-  profile_id = auth.uid()
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_assoc_comune_select"
+  ON public.associazioni_terzo_settore FOR SELECT
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin') OR
+    profile_id = auth.uid()
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_assoc_update_own"
-ON public.associazioni_terzo_settore FOR UPDATE
-TO authenticated
-USING (profile_id = auth.uid())
-WITH CHECK (profile_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "ts_assoc_update_own"
+  ON public.associazioni_terzo_settore FOR UPDATE
+  TO authenticated
+  USING (profile_id = auth.uid())
+  WITH CHECK (profile_id = auth.uid());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_assoc_insert_comune"
-ON public.associazioni_terzo_settore FOR INSERT
-TO authenticated
-WITH CHECK (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_assoc_insert_comune"
+  ON public.associazioni_terzo_settore FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies per Bandi Terzo Settore
-CREATE POLICY "ts_bandi_select"
-ON public.bandi_terzo_settore FOR SELECT
-TO authenticated
-USING (
-  stato IN ('attivo', 'in_chiusura', 'concluso') OR
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_bandi_select"
+  ON public.bandi_terzo_settore FOR SELECT
+  TO authenticated
+  USING (
+    stato IN ('attivo', 'in_chiusura', 'concluso') OR
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_bandi_insert"
-ON public.bandi_terzo_settore FOR INSERT
-TO authenticated
-WITH CHECK (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_bandi_insert"
+  ON public.bandi_terzo_settore FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_bandi_update"
-ON public.bandi_terzo_settore FOR UPDATE
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-)
-WITH CHECK (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_bandi_update"
+  ON public.bandi_terzo_settore FOR UPDATE
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  )
+  WITH CHECK (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_bandi_delete"
-ON public.bandi_terzo_settore FOR DELETE
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_bandi_delete"
+  ON public.bandi_terzo_settore FOR DELETE
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies per Progetti Terzo Settore
-CREATE POLICY "ts_progetti_select"
-ON public.progetti_terzo_settore FOR SELECT
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin') OR
-  associazione_id IN (
-    SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_progetti_select"
+  ON public.progetti_terzo_settore FOR SELECT
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin') OR
+    associazione_id IN (
+      SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_progetti_insert"
-ON public.progetti_terzo_settore FOR INSERT
-TO authenticated
-WITH CHECK (
-  associazione_id IN (
-    SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_progetti_insert"
+  ON public.progetti_terzo_settore FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    associazione_id IN (
+      SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_progetti_update_comune"
-ON public.progetti_terzo_settore FOR UPDATE
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-)
-WITH CHECK (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_progetti_update_comune"
+  ON public.progetti_terzo_settore FOR UPDATE
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  )
+  WITH CHECK (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies per Attività Territorio
-CREATE POLICY "ts_attivita_select"
-ON public.attivita_territorio FOR SELECT
-TO authenticated
-USING (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin') OR
-  public.has_role(auth.uid(), 'associazione')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_attivita_select"
+  ON public.attivita_territorio FOR SELECT
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin') OR
+    public.has_role(auth.uid(), 'associazione')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_attivita_insert"
-ON public.attivita_territorio FOR INSERT
-TO authenticated
-WITH CHECK (
-  associazione_id IN (
-    SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
-  ) OR
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_attivita_insert"
+  ON public.attivita_territorio FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    associazione_id IN (
+      SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
+    ) OR
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_attivita_update"
-ON public.attivita_territorio FOR UPDATE
-TO authenticated
-USING (
-  associazione_id IN (
-    SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
-  ) OR
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-)
-WITH CHECK (
-  associazione_id IN (
-    SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
-  ) OR
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_attivita_update"
+  ON public.attivita_territorio FOR UPDATE
+  TO authenticated
+  USING (
+    associazione_id IN (
+      SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
+    ) OR
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  )
+  WITH CHECK (
+    associazione_id IN (
+      SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
+    ) OR
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_attivita_delete"
-ON public.attivita_territorio FOR DELETE
-TO authenticated
-USING (
-  associazione_id IN (
-    SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
-  ) OR
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_attivita_delete"
+  ON public.attivita_territorio FOR DELETE
+  TO authenticated
+  USING (
+    associazione_id IN (
+      SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
+    ) OR
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies per Comunicazioni
-CREATE POLICY "ts_comunicazioni_select"
-ON public.comunicazioni_terzo_settore FOR SELECT
-TO authenticated
-USING (
-  mittente_id = auth.uid() OR
-  destinatario_associazione_id IN (
-    SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
-  ) OR
-  (destinatario_tutti = true AND public.has_role(auth.uid(), 'associazione')) OR
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_comunicazioni_select"
+  ON public.comunicazioni_terzo_settore FOR SELECT
+  TO authenticated
+  USING (
+    mittente_id = auth.uid() OR
+    destinatario_associazione_id IN (
+      SELECT id FROM public.associazioni_terzo_settore WHERE profile_id = auth.uid()
+    ) OR
+    (destinatario_tutti = true AND public.has_role(auth.uid(), 'associazione')) OR
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "ts_comunicazioni_insert"
-ON public.comunicazioni_terzo_settore FOR INSERT
-TO authenticated
-WITH CHECK (
-  public.has_role(auth.uid(), 'comune') OR 
-  public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
-  public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "ts_comunicazioni_insert"
+  ON public.comunicazioni_terzo_settore FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.has_role(auth.uid(), 'comune') OR 
+    public.has_role(auth.uid(), 'assessorato_terzo_settore') OR
+    public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Triggers per updated_at
-CREATE TRIGGER update_associazioni_ts_updated_at
-BEFORE UPDATE ON public.associazioni_terzo_settore
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_associazioni_ts_updated_at
+  BEFORE UPDATE ON public.associazioni_terzo_settore
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_bandi_ts_updated_at
-BEFORE UPDATE ON public.bandi_terzo_settore
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_bandi_ts_updated_at
+  BEFORE UPDATE ON public.bandi_terzo_settore
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_progetti_ts_updated_at
-BEFORE UPDATE ON public.progetti_terzo_settore
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_progetti_ts_updated_at
+  BEFORE UPDATE ON public.progetti_terzo_settore
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_attivita_territorio_updated_at
-BEFORE UPDATE ON public.attivita_territorio
-FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_attivita_territorio_updated_at
+  BEFORE UPDATE ON public.attivita_territorio
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

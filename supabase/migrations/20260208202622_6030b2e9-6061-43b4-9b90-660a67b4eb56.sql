@@ -4,16 +4,24 @@
 -- =============================================
 
 -- ENUM: Tipo movimento (entrata/uscita)
-CREATE TYPE public.tipo_movimento AS ENUM ('entrata', 'uscita');
+DO $$ BEGIN
+  CREATE TYPE public.tipo_movimento AS ENUM ('entrata', 'uscita');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- ENUM: Tipo modello ministeriale
-CREATE TYPE public.modello_ministeriale AS ENUM ('mod_a', 'mod_b', 'mod_c', 'mod_d');
+DO $$ BEGIN
+  CREATE TYPE public.modello_ministeriale AS ENUM ('mod_a', 'mod_b', 'mod_c', 'mod_d');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- ENUM: Stato esercizio
-CREATE TYPE public.stato_esercizio AS ENUM ('aperto', 'chiuso', 'in_elaborazione');
+DO $$ BEGIN
+  CREATE TYPE public.stato_esercizio AS ENUM ('aperto', 'chiuso', 'in_elaborazione');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- ENUM: Stato progetto contabile
-CREATE TYPE public.stato_progetto_contabile AS ENUM ('attivo', 'completato', 'rendicontato', 'archiviato');
+DO $$ BEGIN
+  CREATE TYPE public.stato_progetto_contabile AS ENUM ('attivo', 'completato', 'rendicontato', 'archiviato');
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- TABELLA: Esercizi contabili
@@ -189,29 +197,41 @@ CREATE INDEX idx_documenti_movimento ON public.documenti_contabili(movimento_id)
 -- =============================================
 -- TRIGGER: updated_at automatico
 -- =============================================
-CREATE TRIGGER update_esercizi_contabili_updated_at
-  BEFORE UPDATE ON public.esercizi_contabili
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_esercizi_contabili_updated_at
+    BEFORE UPDATE ON public.esercizi_contabili
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_movimenti_contabili_updated_at
-  BEFORE UPDATE ON public.movimenti_contabili
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_movimenti_contabili_updated_at
+    BEFORE UPDATE ON public.movimenti_contabili
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_progetti_contabili_updated_at
-  BEFORE UPDATE ON public.progetti_contabili
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_progetti_contabili_updated_at
+    BEFORE UPDATE ON public.progetti_contabili
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_relazioni_missione_updated_at
-  BEFORE UPDATE ON public.relazioni_missione
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_relazioni_missione_updated_at
+    BEFORE UPDATE ON public.relazioni_missione
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_rendiconti_ets_updated_at
-  BEFORE UPDATE ON public.rendiconti_ets
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_rendiconti_ets_updated_at
+    BEFORE UPDATE ON public.rendiconti_ets
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE TRIGGER update_abbonamenti_contabilita_updated_at
-  BEFORE UPDATE ON public.abbonamenti_contabilita
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_abbonamenti_contabilita_updated_at
+    BEFORE UPDATE ON public.abbonamenti_contabilita
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- RLS POLICIES
@@ -226,9 +246,11 @@ ALTER TABLE public.rendiconti_ets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.abbonamenti_contabilita ENABLE ROW LEVEL SECURITY;
 
 -- Categorie: leggibili da tutti (sono voci ministeriali standard)
-CREATE POLICY "Categorie contabili leggibili da tutti"
-  ON public.categorie_contabili FOR SELECT
-  USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Categorie contabili leggibili da tutti"
+    ON public.categorie_contabili FOR SELECT
+    USING (true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy helper function per associazione
 CREATE OR REPLACE FUNCTION public.get_user_associazione_id()
@@ -242,65 +264,89 @@ AS $$
 $$;
 
 -- Esercizi: solo la propria associazione
-CREATE POLICY "Esercizi della propria associazione"
-  ON public.esercizi_contabili FOR ALL
-  USING (associazione_id = public.get_user_associazione_id());
+DO $$ BEGIN
+  CREATE POLICY "Esercizi della propria associazione"
+    ON public.esercizi_contabili FOR ALL
+    USING (associazione_id = public.get_user_associazione_id());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Progetti: solo la propria associazione
-CREATE POLICY "Progetti della propria associazione"
-  ON public.progetti_contabili FOR ALL
-  USING (associazione_id = public.get_user_associazione_id());
+DO $$ BEGIN
+  CREATE POLICY "Progetti della propria associazione"
+    ON public.progetti_contabili FOR ALL
+    USING (associazione_id = public.get_user_associazione_id());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Movimenti: solo la propria associazione
-CREATE POLICY "Movimenti della propria associazione"
-  ON public.movimenti_contabili FOR ALL
-  USING (associazione_id = public.get_user_associazione_id());
+DO $$ BEGIN
+  CREATE POLICY "Movimenti della propria associazione"
+    ON public.movimenti_contabili FOR ALL
+    USING (associazione_id = public.get_user_associazione_id());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Documenti: accesso tramite movimento
-CREATE POLICY "Documenti della propria associazione"
-  ON public.documenti_contabili FOR ALL
-  USING (
-    movimento_id IN (
-      SELECT id FROM public.movimenti_contabili 
-      WHERE associazione_id = public.get_user_associazione_id()
-    )
-  );
+DO $$ BEGIN
+  CREATE POLICY "Documenti della propria associazione"
+    ON public.documenti_contabili FOR ALL
+    USING (
+      movimento_id IN (
+        SELECT id FROM public.movimenti_contabili 
+        WHERE associazione_id = public.get_user_associazione_id()
+      )
+    );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Relazioni missione: solo la propria associazione
-CREATE POLICY "Relazioni missione della propria associazione"
-  ON public.relazioni_missione FOR ALL
-  USING (associazione_id = public.get_user_associazione_id());
+DO $$ BEGIN
+  CREATE POLICY "Relazioni missione della propria associazione"
+    ON public.relazioni_missione FOR ALL
+    USING (associazione_id = public.get_user_associazione_id());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Rendiconti: solo la propria associazione
-CREATE POLICY "Rendiconti della propria associazione"
-  ON public.rendiconti_ets FOR ALL
-  USING (associazione_id = public.get_user_associazione_id());
+DO $$ BEGIN
+  CREATE POLICY "Rendiconti della propria associazione"
+    ON public.rendiconti_ets FOR ALL
+    USING (associazione_id = public.get_user_associazione_id());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Abbonamenti: solo la propria associazione
-CREATE POLICY "Abbonamenti della propria associazione"
-  ON public.abbonamenti_contabilita FOR ALL
-  USING (associazione_id = public.get_user_associazione_id());
+DO $$ BEGIN
+  CREATE POLICY "Abbonamenti della propria associazione"
+    ON public.abbonamenti_contabilita FOR ALL
+    USING (associazione_id = public.get_user_associazione_id());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Policy per admin/assessorato: accesso completo
-CREATE POLICY "Admin accesso completo esercizi"
-  ON public.esercizi_contabili FOR ALL
-  USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+DO $$ BEGIN
+  CREATE POLICY "Admin accesso completo esercizi"
+    ON public.esercizi_contabili FOR ALL
+    USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin accesso completo progetti"
-  ON public.progetti_contabili FOR ALL
-  USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+DO $$ BEGIN
+  CREATE POLICY "Admin accesso completo progetti"
+    ON public.progetti_contabili FOR ALL
+    USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin accesso completo movimenti"
-  ON public.movimenti_contabili FOR ALL
-  USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+DO $$ BEGIN
+  CREATE POLICY "Admin accesso completo movimenti"
+    ON public.movimenti_contabili FOR ALL
+    USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin accesso completo relazioni"
-  ON public.relazioni_missione FOR ALL
-  USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+DO $$ BEGIN
+  CREATE POLICY "Admin accesso completo relazioni"
+    ON public.relazioni_missione FOR ALL
+    USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin accesso completo rendiconti"
-  ON public.rendiconti_ets FOR ALL
-  USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+DO $$ BEGIN
+  CREATE POLICY "Admin accesso completo rendiconti"
+    ON public.rendiconti_ets FOR ALL
+    USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =============================================
 -- DATI INIZIALI: Categorie Mod. D (Rendiconto per Cassa)
@@ -358,13 +404,15 @@ VALUES ('documenti-contabili', 'documenti-contabili', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Policy storage documenti contabili
-CREATE POLICY "Documenti contabili accessibili alla propria associazione"
-ON storage.objects FOR ALL
-USING (
-  bucket_id = 'documenti-contabili' AND
-  (storage.foldername(name))[1]::uuid = public.get_user_associazione_id()
-)
-WITH CHECK (
-  bucket_id = 'documenti-contabili' AND
-  (storage.foldername(name))[1]::uuid = public.get_user_associazione_id()
-);
+DO $$ BEGIN
+  CREATE POLICY "Documenti contabili accessibili alla propria associazione"
+  ON storage.objects FOR ALL
+  USING (
+    bucket_id = 'documenti-contabili' AND
+    (storage.foldername(name))[1]::uuid = public.get_user_associazione_id()
+  )
+  WITH CHECK (
+    bucket_id = 'documenti-contabili' AND
+    (storage.foldername(name))[1]::uuid = public.get_user_associazione_id()
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

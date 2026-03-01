@@ -54,7 +54,7 @@ CREATE TABLE public.pro_loco_inviti (
   pro_loco_id UUID REFERENCES public.pro_loco(id) ON DELETE CASCADE NOT NULL,
   email_destinatario TEXT NOT NULL,
   denominazione_associazione TEXT,
-  token TEXT UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  token TEXT UNIQUE DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   stato TEXT DEFAULT 'inviato' CHECK (stato IN ('inviato', 'accettato', 'rifiutato', 'scaduto')),
   data_invio TIMESTAMPTZ DEFAULT now(),
   data_risposta TIMESTAMPTZ,
@@ -71,76 +71,98 @@ ALTER TABLE public.pro_loco_associazioni ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pro_loco_inviti ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for pro_loco table
-CREATE POLICY "Pro Loco can view own data"
-ON public.pro_loco FOR SELECT
-TO authenticated
-USING (profile_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Pro Loco can view own data"
+  ON public.pro_loco FOR SELECT
+  TO authenticated
+  USING (profile_id = auth.uid());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Pro Loco can update own data"
-ON public.pro_loco FOR UPDATE
-TO authenticated
-USING (profile_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Pro Loco can update own data"
+  ON public.pro_loco FOR UPDATE
+  TO authenticated
+  USING (profile_id = auth.uid());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Pro Loco can insert own data"
-ON public.pro_loco FOR INSERT
-TO authenticated
-WITH CHECK (profile_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Pro Loco can insert own data"
+  ON public.pro_loco FOR INSERT
+  TO authenticated
+  WITH CHECK (profile_id = auth.uid());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admins can view all Pro Loco"
-ON public.pro_loco FOR SELECT
-TO authenticated
-USING (public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins can view all Pro Loco"
+  ON public.pro_loco FOR SELECT
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Comune e Assessorato can view Pro Loco"
-ON public.pro_loco FOR SELECT
-TO authenticated
-USING (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+DO $$ BEGIN
+  CREATE POLICY "Comune e Assessorato can view Pro Loco"
+  ON public.pro_loco FOR SELECT
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies for pro_loco_associazioni
-CREATE POLICY "Pro Loco can manage own associations"
-ON public.pro_loco_associazioni FOR ALL
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.pro_loco 
-    WHERE id = pro_loco_id AND profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Pro Loco can manage own associations"
+  ON public.pro_loco_associazioni FOR ALL
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.pro_loco 
+      WHERE id = pro_loco_id AND profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Associations can view own membership"
-ON public.pro_loco_associazioni FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.associazioni_terzo_settore 
-    WHERE id = associazione_id AND profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Associations can view own membership"
+  ON public.pro_loco_associazioni FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.associazioni_terzo_settore 
+      WHERE id = associazione_id AND profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Comune e Assessorato can view all memberships"
-ON public.pro_loco_associazioni FOR SELECT
-TO authenticated
-USING (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Comune e Assessorato can view all memberships"
+  ON public.pro_loco_associazioni FOR SELECT
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- RLS Policies for pro_loco_inviti
-CREATE POLICY "Pro Loco can manage own invitations"
-ON public.pro_loco_inviti FOR ALL
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.pro_loco 
-    WHERE id = pro_loco_id AND profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Pro Loco can manage own invitations"
+  ON public.pro_loco_inviti FOR ALL
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.pro_loco 
+      WHERE id = pro_loco_id AND profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Update timestamp trigger for pro_loco
-CREATE TRIGGER update_pro_loco_updated_at
-BEFORE UPDATE ON public.pro_loco
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_pro_loco_updated_at
+  BEFORE UPDATE ON public.pro_loco
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Update timestamp trigger for pro_loco_associazioni
-CREATE TRIGGER update_pro_loco_associazioni_updated_at
-BEFORE UPDATE ON public.pro_loco_associazioni
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at_column();
+DO $$ BEGIN
+  CREATE TRIGGER update_pro_loco_associazioni_updated_at
+  BEFORE UPDATE ON public.pro_loco_associazioni
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

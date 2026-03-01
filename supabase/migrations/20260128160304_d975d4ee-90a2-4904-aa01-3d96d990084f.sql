@@ -31,16 +31,20 @@ AS $$
 $$;
 
 -- Ricrea le policy usando le funzioni security definer
-CREATE POLICY "Gestori can view assigned gestori_pratiche records"
-ON public.gestori_pratiche
-FOR SELECT
-USING (
-  id IN (SELECT get_gestori_pratiche_for_gestore(auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Gestori can view assigned gestori_pratiche records"
+  ON public.gestori_pratiche
+  FOR SELECT
+  USING (
+    id IN (SELECT get_gestori_pratiche_for_gestore(auth.uid()))
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Docenti can view assigned gestori_pratiche records"
-ON public.gestori_pratiche
-FOR SELECT
-USING (
-  id IN (SELECT get_gestori_pratiche_for_docente(auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Docenti can view assigned gestori_pratiche records"
+  ON public.gestori_pratiche
+  FOR SELECT
+  USING (
+    id IN (SELECT get_gestori_pratiche_for_docente(auth.uid()))
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

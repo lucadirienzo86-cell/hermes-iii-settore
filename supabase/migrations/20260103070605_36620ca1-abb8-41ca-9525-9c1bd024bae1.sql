@@ -3,9 +3,11 @@
 DROP POLICY IF EXISTS "Admins can manage aziende" ON public.aziende;
 
 -- Create permissive policy for admins
-CREATE POLICY "Admins have full access to aziende" 
-ON public.aziende 
-FOR ALL 
-TO authenticated
-USING (has_role(auth.uid(), 'admin'::app_role))
-WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins have full access to aziende" 
+  ON public.aziende 
+  FOR ALL 
+  TO authenticated
+  USING (has_role(auth.uid(), 'admin'::app_role))
+  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

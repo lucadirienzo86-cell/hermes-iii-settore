@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="240">
+  <rect width="100%" height="100%" fill="#fff"/>
+  <text x="20" y="40" font-family="Arial" font-size="18" fill="#111">Diagramma architettura (sorgente: docs/diagrams/architettura.mmd)</text>
+  <text x="20" y="80" font-family="Arial" font-size="12" fill="#444">Apri il file .mmd per il sorgente Mermaid o esporta con uno strumento Mermaid→SVG.</text>
+</svg>

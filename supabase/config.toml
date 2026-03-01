@@ -1,1 +1,9 @@
-project_id = "zpkndfvwiwuyhnadqehe"
+project_id = "vlhxmzvcuajbtvrwmhvt"
+
+[auth]
+site_url = "https://hermes-iii-settore.vercel.app"
+additional_redirect_urls = [
+  "https://hermes-iii-settore.vercel.app/**",
+  "http://localhost:8080/**",
+  "http://localhost:8080"
+]

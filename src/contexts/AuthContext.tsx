@@ -66,8 +66,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loadUserProfile = async (userId: string) => {
     try {
-      console.log('[AuthContext] Loading profile for user:', userId);
-      
       // Load profile with maybeSingle to handle missing profiles gracefully
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -76,10 +74,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
 
       if (profileError) throw profileError;
-      
+
       // If no profile exists, create a minimal one
       if (!profileData) {
-        console.warn('[AuthContext] No profile found for user, using fallback');
         setProfile({
           id: userId,
           email: '',
@@ -89,8 +86,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
-      console.log('[AuthContext] Profile loaded:', profileData);
-
       // Load ALL roles from user_roles table
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
@@ -98,7 +93,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('user_id', userId);
 
       if (rolesError) throw rolesError;
-      console.log('[AuthContext] Roles loaded:', rolesData);
 
       // Determine primary role with priority
       let primaryRole: UserRole = 'gestore'; // default
@@ -119,8 +113,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         else if (roles.includes('docente')) primaryRole = 'docente';
       }
 
-      console.log('[AuthContext] Primary role determined:', primaryRole);
-
       setProfile({
         ...profileData,
         role: primaryRole
@@ -140,14 +132,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('[AuthContext] Attempting sign in for:', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-      console.log('[AuthContext] Sign in successful, user:', data.user?.id);
 
       // Carica il profilo per determinare il ruolo
       const { data: profileData } = await supabase
@@ -165,9 +155,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let primaryRole: UserRole = 'gestore';
       if (rolesData && rolesData.length > 0) {
         const roles = rolesData.map(r => r.role);
-        if (roles.includes('azienda')) primaryRole = 'azienda';
-        else if (roles.includes('pro_loco' as any)) primaryRole = 'pro_loco';
-        else if (roles.includes('admin')) primaryRole = 'admin';
+        if (roles.includes('admin')) primaryRole = 'admin';
+        else if (roles.includes('azienda')) primaryRole = 'azienda';
+        else if (roles.includes('pro_loco')) primaryRole = 'pro_loco';
         else if (roles.includes('editore')) primaryRole = 'editore';
         else if (roles.includes('comune')) primaryRole = 'comune';
         else if (roles.includes('assessorato_terzo_settore')) primaryRole = 'assessorato_terzo_settore';
@@ -199,7 +189,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return { error: null };
     } catch (error: any) {
-      console.error('[AuthContext] Sign in error:', error);
       toast({
         variant: "destructive",
         title: "Errore di accesso",

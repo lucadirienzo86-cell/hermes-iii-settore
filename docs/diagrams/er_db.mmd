@@ -1,0 +1,18 @@
+erDiagram
+    USERS {
+      uuid id PK
+      varchar email
+      varchar role
+    }
+    BANDI {
+      uuid id PK
+      text title
+      timestamp published_at
+    }
+    PRATICHE {
+      uuid id PK
+      uuid user_id FK
+      text status
+    }
+    USERS ||--o{ PRATICHE : "crea"
+    BANDI ||--o{ PRATICHE : "riferito"

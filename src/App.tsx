@@ -21,6 +21,20 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Dashboard from "./pages/Dashboard";
 import Utenti from "./pages/Utenti";
 import AdminOpzioni from "./pages/AdminOpzioni";
+import RichiesteContatto from "./pages/RichiesteContatto";
+import FondimpresaImport from "./pages/FondimpresaImport";
+
+// Multi-role pages (admin, gestore, docente, gestore_pratiche)
+import Aziende from "./pages/Aziende";
+import AziendaDettaglio from "./pages/AziendaDettaglio";
+import Fondi from "./pages/Fondi";
+import Docenti from "./pages/Docenti";
+import Pratiche from "./pages/Pratiche";
+import PraticaDettaglio from "./pages/PraticaDettaglio";
+import RicercaImprese from "./pages/RicercaImprese";
+import Incroci from "./pages/Incroci";
+import DeMinimisInfo from "./pages/DeMinimisInfo";
+import DocenteMatching from "./pages/DocenteMatching";
 
 // Institutional pages (Comune/Assessorato)
 import ComuneAuth from "./pages/ComuneAuth";
@@ -60,7 +74,7 @@ import RendicontoCassa from "./pages/associazione/RendicontoCassa";
 
 // SONIC / Trova Bandi module (BLACK BOX - do not modify)
 import TrovaBandi from "./pages/TrovaBandi";
-import BandiAssociazione from "./pages/BandiAssociazione";
+import BandiComune from "./pages/BandiComune";
 import Bandi from "./pages/Bandi";
 
 // Profile pages (kept for role-specific profiles)
@@ -75,6 +89,11 @@ import AppDashboard from "./pages/app/Dashboard";
 import AppProfilo from "./pages/app/Profilo";
 import AppBandi from "./pages/app/Bandi";
 import AppBandoDettaglio from "./pages/app/BandoDettaglio";
+import AppFondi from "./pages/app/Fondi";
+import AppFondoDettaglio from "./pages/app/FondoDettaglio";
+import AppPratiche from "./pages/app/Pratiche";
+import AppPraticaChat from "./pages/app/PraticaChat";
+import AppOnboarding from "./pages/app/Onboarding";
 
 const queryClient = new QueryClient();
 
@@ -159,11 +178,20 @@ const App = () => (
               />
               
               {/* Legacy routes → redirect to new structure */}
+              <Route
+                path="/istituzionale/bandi-comune"
+                element={
+                  <RoleGuard allowedRoles={['comune', 'assessorato_terzo_settore']} loginPath="/comune/auth">
+                    <BandiComune />
+                  </RoleGuard>
+                }
+              />
+
               <Route path="/terzo-settore" element={<Navigate to="/istituzionale/progetti" replace />} />
               <Route path="/anagrafe-associazioni" element={<Navigate to="/istituzionale/associazioni" replace />} />
               <Route path="/associazione/:id" element={<Navigate to="/istituzionale/associazioni/:id" replace />} />
               <Route path="/anagrafiche-assessorato" element={<Navigate to="/istituzionale/notifiche" replace />} />
-              <Route path="/trova-bandi" element={<Navigate to="/istituzionale/bandi" replace />} />
+              <Route path="/trova-bandi" element={<ProtectedRoute><TrovaBandi /></ProtectedRoute>} />
               <Route path="/bandi-associazione" element={<Navigate to="/istituzionale/bandi" replace />} />
               <Route path="/bandi" element={<Navigate to="/istituzionale/bandi" replace />} />
               
@@ -319,15 +347,55 @@ const App = () => (
                   </ProtectedAppRoute>
                 } 
               />
-              <Route 
-                path="/app/bandi/:id" 
+              <Route
+                path="/app/bandi/:id"
                 element={
                   <ProtectedAppRoute>
                     <AppBandoDettaglio />
                   </ProtectedAppRoute>
-                } 
+                }
               />
-              
+              <Route
+                path="/app/fondi"
+                element={
+                  <ProtectedAppRoute>
+                    <AppFondi />
+                  </ProtectedAppRoute>
+                }
+              />
+              <Route
+                path="/app/fondi/:id"
+                element={
+                  <ProtectedAppRoute>
+                    <AppFondoDettaglio />
+                  </ProtectedAppRoute>
+                }
+              />
+              <Route
+                path="/app/pratiche"
+                element={
+                  <ProtectedAppRoute>
+                    <AppPratiche />
+                  </ProtectedAppRoute>
+                }
+              />
+              <Route
+                path="/app/pratiche/:id/chat"
+                element={
+                  <ProtectedAppRoute>
+                    <AppPraticaChat />
+                  </ProtectedAppRoute>
+                }
+              />
+              <Route
+                path="/app/onboarding"
+                element={
+                  <ProtectedAppRoute>
+                    <AppOnboarding />
+                  </ProtectedAppRoute>
+                }
+              />
+
               {/* ================================================================ */}
               {/* ===== ADMIN ROUTES ===== */}
               {/* ================================================================ */}
@@ -391,6 +459,104 @@ const App = () => (
                 }
               />
               
+              {/* ================================================================ */}
+              {/* ===== MULTI-ROLE ROUTES (admin, gestore, docente, ecc.) ===== */}
+              {/* ================================================================ */}
+              <Route
+                path="/aziende"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'gestore', 'docente', 'gestore_pratiche', 'editore']} loginPath="/auth">
+                    <Aziende />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/azienda/:id"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'gestore', 'docente', 'gestore_pratiche']} loginPath="/auth">
+                    <AziendaDettaglio />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/fondi"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'editore', 'gestore', 'docente']} loginPath="/auth">
+                    <Fondi />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/docenti"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'gestore', 'docente']} loginPath="/auth">
+                    <Docenti />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/pratiche"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'gestore', 'gestore_pratiche', 'docente']} loginPath="/auth">
+                    <Pratiche />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/pratica/:id"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'gestore', 'gestore_pratiche', 'docente']} loginPath="/auth">
+                    <PraticaDettaglio />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/incroci"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'gestore', 'docente']} loginPath="/auth">
+                    <Incroci />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/ricerca-imprese"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'gestore', 'docente']} loginPath="/auth">
+                    <RicercaImprese />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/docente-matching"
+                element={
+                  <RoleGuard allowedRoles={['docente']} loginPath="/auth">
+                    <DocenteMatching />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/de-minimis-info"
+                element={<DeMinimisInfo />}
+              />
+
+              {/* ===== ADMIN-ONLY ROUTES ===== */}
+              <Route
+                path="/richieste-contatto"
+                element={
+                  <RoleGuard allowedRoles={['admin']} loginPath="/auth">
+                    <RichiesteContatto />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/admin/fondimpresa-import"
+                element={
+                  <RoleGuard allowedRoles={['admin', 'editore']} loginPath="/auth">
+                    <FondimpresaImport />
+                  </RoleGuard>
+                }
+              />
+
               {/* ===== CATCH-ALL ===== */}
               <Route path="*" element={<NotFound />} />
             </Routes>

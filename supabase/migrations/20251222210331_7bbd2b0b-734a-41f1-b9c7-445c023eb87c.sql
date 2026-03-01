@@ -13,10 +13,14 @@ CREATE TABLE IF NOT EXISTS public.fondimpresa_aziende (
 
 ALTER TABLE public.fondimpresa_aziende ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can view fondimpresa_aziende"
-  ON public.fondimpresa_aziende FOR SELECT
-  USING (auth.uid() IS NOT NULL);
+DO $$ BEGIN
+  CREATE POLICY "Authenticated users can view fondimpresa_aziende"
+    ON public.fondimpresa_aziende FOR SELECT
+    USING (auth.uid() IS NOT NULL);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admins can manage fondimpresa_aziende"
-  ON public.fondimpresa_aziende FOR ALL
-  USING (public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage fondimpresa_aziende"
+    ON public.fondimpresa_aziende FOR ALL
+    USING (public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

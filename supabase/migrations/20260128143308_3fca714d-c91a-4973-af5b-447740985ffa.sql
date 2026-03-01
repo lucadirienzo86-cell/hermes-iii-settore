@@ -32,63 +32,79 @@ ALTER TABLE public.gestori_pratiche ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gestori_pratiche_assegnazioni ENABLE ROW LEVEL SECURITY;
 
 -- 5. RLS policies for gestori_pratiche
-CREATE POLICY "Admins can manage gestori_pratiche"
-ON public.gestori_pratiche FOR ALL
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage gestori_pratiche"
+  ON public.gestori_pratiche FOR ALL
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Gestori pratiche can view their own record"
-ON public.gestori_pratiche FOR SELECT
-USING (profile_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Gestori pratiche can view their own record"
+  ON public.gestori_pratiche FOR SELECT
+  USING (profile_id = auth.uid());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Gestori pratiche can update their own record"
-ON public.gestori_pratiche FOR UPDATE
-USING (profile_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Gestori pratiche can update their own record"
+  ON public.gestori_pratiche FOR UPDATE
+  USING (profile_id = auth.uid());
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- 6. RLS policies for gestori_pratiche_assegnazioni
-CREATE POLICY "Admins can manage gestori_pratiche_assegnazioni"
-ON public.gestori_pratiche_assegnazioni FOR ALL
-USING (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admins can manage gestori_pratiche_assegnazioni"
+  ON public.gestori_pratiche_assegnazioni FOR ALL
+  USING (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Gestori pratiche can view their own assignments"
-ON public.gestori_pratiche_assegnazioni FOR SELECT
-USING (
-  gestore_pratiche_id IN (
-    SELECT id FROM public.gestori_pratiche WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Gestori pratiche can view their own assignments"
+  ON public.gestori_pratiche_assegnazioni FOR SELECT
+  USING (
+    gestore_pratiche_id IN (
+      SELECT id FROM public.gestori_pratiche WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- 7. RLS policy for pratiche - allow gestore_pratiche to see assigned practices
-CREATE POLICY "Gestori pratiche can view assigned pratiche"
-ON public.pratiche FOR SELECT
-USING (
-  azienda_id IN (
-    SELECT az.id FROM public.aziende az
-    JOIN public.gestori_pratiche_assegnazioni gpa ON (
-      gpa.gestore_id = az.inserita_da_gestore_id OR
-      gpa.docente_id = az.inserita_da_docente_id
+DO $$ BEGIN
+  CREATE POLICY "Gestori pratiche can view assigned pratiche"
+  ON public.pratiche FOR SELECT
+  USING (
+    azienda_id IN (
+      SELECT az.id FROM public.aziende az
+      JOIN public.gestori_pratiche_assegnazioni gpa ON (
+        gpa.gestore_id = az.inserita_da_gestore_id OR
+        gpa.docente_id = az.inserita_da_docente_id
+      )
+      JOIN public.gestori_pratiche gp ON gp.id = gpa.gestore_pratiche_id
+      WHERE gp.profile_id = auth.uid()
     )
-    JOIN public.gestori_pratiche gp ON gp.id = gpa.gestore_pratiche_id
-    WHERE gp.profile_id = auth.uid()
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- 8. RLS policy for aziende - allow gestore_pratiche to see assigned companies
-CREATE POLICY "Gestori pratiche can view assigned aziende"
-ON public.aziende FOR SELECT
-USING (
-  id IN (
-    SELECT az.id FROM public.aziende az
-    JOIN public.gestori_pratiche_assegnazioni gpa ON (
-      gpa.gestore_id = az.inserita_da_gestore_id OR
-      gpa.docente_id = az.inserita_da_docente_id
+DO $$ BEGIN
+  CREATE POLICY "Gestori pratiche can view assigned aziende"
+  ON public.aziende FOR SELECT
+  USING (
+    id IN (
+      SELECT az.id FROM public.aziende az
+      JOIN public.gestori_pratiche_assegnazioni gpa ON (
+        gpa.gestore_id = az.inserita_da_gestore_id OR
+        gpa.docente_id = az.inserita_da_docente_id
+      )
+      JOIN public.gestori_pratiche gp ON gp.id = gpa.gestore_pratiche_id
+      WHERE gp.profile_id = auth.uid()
     )
-    JOIN public.gestori_pratiche gp ON gp.id = gpa.gestore_pratiche_id
-    WHERE gp.profile_id = auth.uid()
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- 9. Add trigger for updated_at
-CREATE TRIGGER update_gestori_pratiche_updated_at
-BEFORE UPDATE ON public.gestori_pratiche
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_gestori_pratiche_updated_at
+  BEFORE UPDATE ON public.gestori_pratiche
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

@@ -22,13 +22,17 @@ CREATE TABLE public.requisiti_bando (
 ALTER TABLE public.requisiti_bando ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies for requisiti_bando
-CREATE POLICY "Requisiti visibili a tutti gli utenti autenticati"
-  ON public.requisiti_bando FOR SELECT
-  USING (auth.uid() IS NOT NULL);
+DO $$ BEGIN
+  CREATE POLICY "Requisiti visibili a tutti gli utenti autenticati"
+    ON public.requisiti_bando FOR SELECT
+    USING (auth.uid() IS NOT NULL);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin e editori possono gestire requisiti"
-  ON public.requisiti_bando FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'editore'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admin e editori possono gestire requisiti"
+    ON public.requisiti_bando FOR ALL
+    USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'editore'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Create bandi_requisiti pivot table
 CREATE TABLE public.bandi_requisiti (
@@ -45,13 +49,17 @@ CREATE TABLE public.bandi_requisiti (
 ALTER TABLE public.bandi_requisiti ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies for bandi_requisiti
-CREATE POLICY "Bandi requisiti visibili a tutti gli autenticati"
-  ON public.bandi_requisiti FOR SELECT
-  USING (auth.uid() IS NOT NULL);
+DO $$ BEGIN
+  CREATE POLICY "Bandi requisiti visibili a tutti gli autenticati"
+    ON public.bandi_requisiti FOR SELECT
+    USING (auth.uid() IS NOT NULL);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin e editori possono gestire bandi_requisiti"
-  ON public.bandi_requisiti FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'editore'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admin e editori possono gestire bandi_requisiti"
+    ON public.bandi_requisiti FOR ALL
+    USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'editore'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Create avvisi_requisiti pivot table
 CREATE TABLE public.avvisi_requisiti (
@@ -68,13 +76,17 @@ CREATE TABLE public.avvisi_requisiti (
 ALTER TABLE public.avvisi_requisiti ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies for avvisi_requisiti
-CREATE POLICY "Avvisi requisiti visibili a tutti gli autenticati"
-  ON public.avvisi_requisiti FOR SELECT
-  USING (auth.uid() IS NOT NULL);
+DO $$ BEGIN
+  CREATE POLICY "Avvisi requisiti visibili a tutti gli autenticati"
+    ON public.avvisi_requisiti FOR SELECT
+    USING (auth.uid() IS NOT NULL);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Admin e editori possono gestire avvisi_requisiti"
-  ON public.avvisi_requisiti FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'editore'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admin e editori possono gestire avvisi_requisiti"
+    ON public.avvisi_requisiti FOR ALL
+    USING (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'editore'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Insert default requisiti
 INSERT INTO public.requisiti_bando (nome, descrizione, icona, obbligatorio_default, ordine) VALUES
@@ -88,7 +100,9 @@ INSERT INTO public.requisiti_bando (nome, descrizione, icona, obbligatorio_defau
 ('Nessun procedimento penale', 'Assenza di procedimenti penali in corso a carico dei legali rappresentanti', '⚖️', true, 8);
 
 -- Trigger for updated_at
-CREATE TRIGGER update_requisiti_bando_updated_at
-  BEFORE UPDATE ON public.requisiti_bando
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at();
+DO $$ BEGIN
+  CREATE TRIGGER update_requisiti_bando_updated_at
+    BEFORE UPDATE ON public.requisiti_bando
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

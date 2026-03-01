@@ -39,115 +39,135 @@ DROP POLICY IF EXISTS "Gestori pratiche can view assigned pratiche" ON public.pr
 -- 5. Creare nuove policy RLS per pratiche
 
 -- Admin: accesso completo
-CREATE POLICY "Admin full access to pratiche"
-ON public.pratiche
-FOR ALL
-USING (has_role(auth.uid(), 'admin'::app_role))
-WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+DO $$ BEGIN
+  CREATE POLICY "Admin full access to pratiche"
+  ON public.pratiche
+  FOR ALL
+  USING (has_role(auth.uid(), 'admin'::app_role))
+  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Azienda: può vedere solo le proprie pratiche
-CREATE POLICY "Aziende can view own pratiche"
-ON public.pratiche
-FOR SELECT
-USING (
-  azienda_id IN (
-    SELECT id FROM aziende WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Aziende can view own pratiche"
+  ON public.pratiche
+  FOR SELECT
+  USING (
+    azienda_id IN (
+      SELECT id FROM aziende WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Azienda: può inserire pratiche per la propria azienda
-CREATE POLICY "Aziende can insert own pratiche"
-ON public.pratiche
-FOR INSERT
-WITH CHECK (
-  azienda_id IN (
-    SELECT id FROM aziende WHERE profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Aziende can insert own pratiche"
+  ON public.pratiche
+  FOR INSERT
+  WITH CHECK (
+    azienda_id IN (
+      SELECT id FROM aziende WHERE profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Gestori (professionisti): possono vedere pratiche delle proprie aziende
-CREATE POLICY "Gestori can view their aziende pratiche"
-ON public.pratiche
-FOR SELECT
-USING (
-  azienda_id IN (
-    SELECT id FROM aziende 
-    WHERE inserita_da_gestore_id IN (
-      SELECT id FROM gestori WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Gestori can view their aziende pratiche"
+  ON public.pratiche
+  FOR SELECT
+  USING (
+    azienda_id IN (
+      SELECT id FROM aziende 
+      WHERE inserita_da_gestore_id IN (
+        SELECT id FROM gestori WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Gestori: possono inserire pratiche per le proprie aziende
-CREATE POLICY "Gestori can insert pratiche for their aziende"
-ON public.pratiche
-FOR INSERT
-WITH CHECK (
-  azienda_id IN (
-    SELECT id FROM aziende 
-    WHERE inserita_da_gestore_id IN (
-      SELECT id FROM gestori WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Gestori can insert pratiche for their aziende"
+  ON public.pratiche
+  FOR INSERT
+  WITH CHECK (
+    azienda_id IN (
+      SELECT id FROM aziende 
+      WHERE inserita_da_gestore_id IN (
+        SELECT id FROM gestori WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Docenti: possono vedere pratiche delle proprie aziende
-CREATE POLICY "Docenti can view their aziende pratiche"
-ON public.pratiche
-FOR SELECT
-USING (
-  azienda_id IN (
-    SELECT id FROM aziende 
-    WHERE inserita_da_docente_id IN (
-      SELECT id FROM docenti WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Docenti can view their aziende pratiche"
+  ON public.pratiche
+  FOR SELECT
+  USING (
+    azienda_id IN (
+      SELECT id FROM aziende 
+      WHERE inserita_da_docente_id IN (
+        SELECT id FROM docenti WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Docenti: possono inserire pratiche per le proprie aziende
-CREATE POLICY "Docenti can insert pratiche for their aziende"
-ON public.pratiche
-FOR INSERT
-WITH CHECK (
-  azienda_id IN (
-    SELECT id FROM aziende 
-    WHERE inserita_da_docente_id IN (
-      SELECT id FROM docenti WHERE profile_id = auth.uid()
+DO $$ BEGIN
+  CREATE POLICY "Docenti can insert pratiche for their aziende"
+  ON public.pratiche
+  FOR INSERT
+  WITH CHECK (
+    azienda_id IN (
+      SELECT id FROM aziende 
+      WHERE inserita_da_docente_id IN (
+        SELECT id FROM docenti WHERE profile_id = auth.uid()
+      )
     )
-  )
-);
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Gestore Pratiche: può vedere pratiche "richiesta" non assegnate
-CREATE POLICY "Gestore pratiche can view unassigned pratiche"
-ON public.pratiche
-FOR SELECT
-USING (
-  has_role(auth.uid(), 'gestore_pratiche'::app_role) 
-  AND id IN (SELECT get_pratiche_non_assegnate())
-);
+DO $$ BEGIN
+  CREATE POLICY "Gestore pratiche can view unassigned pratiche"
+  ON public.pratiche
+  FOR SELECT
+  USING (
+    has_role(auth.uid(), 'gestore_pratiche'::app_role) 
+    AND id IN (SELECT get_pratiche_non_assegnate())
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Gestore Pratiche: può vedere le pratiche che ha preso in carico
-CREATE POLICY "Gestore pratiche can view assigned pratiche"
-ON public.pratiche
-FOR SELECT
-USING (
-  id IN (SELECT get_pratiche_for_gestore_pratiche(auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Gestore pratiche can view assigned pratiche"
+  ON public.pratiche
+  FOR SELECT
+  USING (
+    id IN (SELECT get_pratiche_for_gestore_pratiche(auth.uid()))
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Gestore Pratiche: può aggiornare solo le pratiche che ha preso in carico o prendere in carico nuove
-CREATE POLICY "Gestore pratiche can update pratiche"
-ON public.pratiche
-FOR UPDATE
-USING (
-  has_role(auth.uid(), 'gestore_pratiche'::app_role) 
-  AND (
-    -- Può aggiornare le proprie pratiche assegnate
-    id IN (SELECT get_pratiche_for_gestore_pratiche(auth.uid()))
-    OR
-    -- Può prendere in carico pratiche non assegnate
-    (stato = 'richiesta' AND gestore_pratiche_id IS NULL)
+DO $$ BEGIN
+  CREATE POLICY "Gestore pratiche can update pratiche"
+  ON public.pratiche
+  FOR UPDATE
+  USING (
+    has_role(auth.uid(), 'gestore_pratiche'::app_role) 
+    AND (
+      -- Può aggiornare le proprie pratiche assegnate
+      id IN (SELECT get_pratiche_for_gestore_pratiche(auth.uid()))
+      OR
+      -- Può prendere in carico pratiche non assegnate
+      (stato = 'richiesta' AND gestore_pratiche_id IS NULL)
+    )
   )
-)
-WITH CHECK (
-  has_role(auth.uid(), 'gestore_pratiche'::app_role)
-);
+  WITH CHECK (
+    has_role(auth.uid(), 'gestore_pratiche'::app_role)
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

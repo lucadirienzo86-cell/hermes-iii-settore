@@ -34,15 +34,19 @@ ADD COLUMN IF NOT EXISTS categoria_id UUID REFERENCES public.categorie_associazi
 -- RLS
 ALTER TABLE public.categorie_associazioni ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Categorie visibili a tutti" 
-ON public.categorie_associazioni FOR SELECT 
-TO authenticated USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Categorie visibili a tutti" 
+  ON public.categorie_associazioni FOR SELECT 
+  TO authenticated USING (true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Solo admin modifica categorie"
-ON public.categorie_associazioni FOR ALL
-TO authenticated
-USING (public.has_role(auth.uid(), 'admin'))
-WITH CHECK (public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Solo admin modifica categorie"
+  ON public.categorie_associazioni FOR ALL
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =====================================================
 -- RASSEGNA STAMPA
@@ -67,16 +71,20 @@ CREATE TABLE IF NOT EXISTS public.rassegna_stampa (
 -- RLS
 ALTER TABLE public.rassegna_stampa ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Rassegna stampa pubblica visibile a tutti"
-ON public.rassegna_stampa FOR SELECT
-TO authenticated
-USING (visibilita = 'pubblico' OR public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Rassegna stampa pubblica visibile a tutti"
+  ON public.rassegna_stampa FOR SELECT
+  TO authenticated
+  USING (visibilita = 'pubblico' OR public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Istituzionali gestiscono rassegna"
-ON public.rassegna_stampa FOR ALL
-TO authenticated
-USING (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'))
-WITH CHECK (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Istituzionali gestiscono rassegna"
+  ON public.rassegna_stampa FOR ALL
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (public.has_role(auth.uid(), 'comune') OR public.has_role(auth.uid(), 'assessorato_terzo_settore') OR public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- =====================================================
 -- NOTIFICHE ISTITUZIONALI
@@ -110,24 +118,30 @@ CREATE TABLE IF NOT EXISTS public.notifiche_istituzionali (
 -- RLS
 ALTER TABLE public.notifiche_istituzionali ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Utenti vedono proprie notifiche"
-ON public.notifiche_istituzionali FOR SELECT
-TO authenticated
-USING (
-  destinatario_id = auth.uid() 
-  OR destinatario_id IS NULL 
-  OR public.has_role(auth.uid(), 'admin')
-);
+DO $$ BEGIN
+  CREATE POLICY "Utenti vedono proprie notifiche"
+  ON public.notifiche_istituzionali FOR SELECT
+  TO authenticated
+  USING (
+    destinatario_id = auth.uid() 
+    OR destinatario_id IS NULL 
+    OR public.has_role(auth.uid(), 'admin')
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Sistema crea notifiche"
-ON public.notifiche_istituzionali FOR INSERT
-TO authenticated
-WITH CHECK (true);
+DO $$ BEGIN
+  CREATE POLICY "Sistema crea notifiche"
+  ON public.notifiche_istituzionali FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Utenti aggiornano proprie notifiche"
-ON public.notifiche_istituzionali FOR UPDATE
-TO authenticated
-USING (destinatario_id = auth.uid() OR public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Utenti aggiornano proprie notifiche"
+  ON public.notifiche_istituzionali FOR UPDATE
+  TO authenticated
+  USING (destinatario_id = auth.uid() OR public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_rassegna_stampa_tipo ON public.rassegna_stampa(tipo);

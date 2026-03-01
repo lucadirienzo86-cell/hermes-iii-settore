@@ -26,7 +26,7 @@ DROP POLICY IF EXISTS "Users can manage badge_assegnazioni for their entities" O
 DROP POLICY IF EXISTS "Users can view their own badges" ON public.badge_assegnazioni;
 
 -- Step 2: Drop the foreign key column from aziende
-ALTER TABLE public.aziende DROP COLUMN IF EXISTS inserita_da_collaboratore_id;
+ALTER TABLE public.aziende DROP COLUMN IF EXISTS inserita_da_collaboratore_id CASCADE;
 
 -- Step 3: Drop the collaboratori table
 DROP TABLE IF EXISTS public.collaboratori CASCADE;
@@ -34,88 +34,98 @@ DROP TABLE IF EXISTS public.collaboratori CASCADE;
 -- Step 4: Recreate clean RLS policies without collaboratori references
 
 -- Recreate aziende policy for gestori (without collaboratori reference)
-CREATE POLICY "Gestori can view aziende they manage" 
-ON public.aziende FOR SELECT 
-USING (
-  inserita_da_gestore_id IN (
-    SELECT gestori.id FROM gestori WHERE gestori.profile_id = auth.uid()
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Gestori can view aziende they manage" 
+  ON public.aziende FOR SELECT 
+  USING (
+    inserita_da_gestore_id IN (
+      SELECT gestori.id FROM gestori WHERE gestori.profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- badge_log policies (without collaboratori)
-CREATE POLICY "Users can insert badge_log for their entities" 
-ON public.badge_log FOR INSERT 
-WITH CHECK (
-  has_role(auth.uid(), 'admin'::app_role) 
-  OR (
-    (entity_type = 'azienda'::text) AND (entity_id IN (
-      SELECT a.id FROM aziende a
-      WHERE (
-        (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
-        OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
-        OR (a.profile_id = auth.uid())
-      )
-    ))
-  ) 
-  OR (
-    (entity_type = 'docente'::text) AND (entity_id IN (
-      SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()
-    ))
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Users can insert badge_log for their entities" 
+  ON public.badge_log FOR INSERT 
+  WITH CHECK (
+    has_role(auth.uid(), 'admin'::app_role) 
+    OR (
+      (entity_type = 'azienda'::text) AND (entity_id IN (
+        SELECT a.id FROM aziende a
+        WHERE (
+          (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
+          OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
+          OR (a.profile_id = auth.uid())
+        )
+      ))
+    ) 
+    OR (
+      (entity_type = 'docente'::text) AND (entity_id IN (
+        SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()
+      ))
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Users can view badge_log for their entities" 
-ON public.badge_log FOR SELECT 
-USING (
-  has_role(auth.uid(), 'admin'::app_role)
-  OR (
-    (entity_type = 'azienda'::text) AND (entity_id IN (
-      SELECT a.id FROM aziende a
-      WHERE (
-        (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
-        OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
-        OR (a.profile_id = auth.uid())
-      )
-    ))
-  ) 
-  OR (
-    (entity_type = 'docente'::text) AND (entity_id IN (
-      SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()
-    ))
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Users can view badge_log for their entities" 
+  ON public.badge_log FOR SELECT 
+  USING (
+    has_role(auth.uid(), 'admin'::app_role)
+    OR (
+      (entity_type = 'azienda'::text) AND (entity_id IN (
+        SELECT a.id FROM aziende a
+        WHERE (
+          (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
+          OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
+          OR (a.profile_id = auth.uid())
+        )
+      ))
+    ) 
+    OR (
+      (entity_type = 'docente'::text) AND (entity_id IN (
+        SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()
+      ))
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- badge_assegnazioni policies (without collaboratori)
-CREATE POLICY "Users can manage badge_assegnazioni for their entities" 
-ON public.badge_assegnazioni FOR ALL 
-USING (
-  has_role(auth.uid(), 'admin'::app_role) 
-  OR (azienda_id IN (
-    SELECT a.id FROM aziende a
-    WHERE (
-      (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
-      OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
-      OR (a.profile_id = auth.uid())
-    )
-  ))
-  OR (docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
-)
-WITH CHECK (
-  has_role(auth.uid(), 'admin'::app_role) 
-  OR (azienda_id IN (
-    SELECT a.id FROM aziende a
-    WHERE (
-      (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
-      OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
-      OR (a.profile_id = auth.uid())
-    )
-  ))
-  OR (docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Users can manage badge_assegnazioni for their entities" 
+  ON public.badge_assegnazioni FOR ALL 
+  USING (
+    has_role(auth.uid(), 'admin'::app_role) 
+    OR (azienda_id IN (
+      SELECT a.id FROM aziende a
+      WHERE (
+        (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
+        OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
+        OR (a.profile_id = auth.uid())
+      )
+    ))
+    OR (docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
+  )
+  WITH CHECK (
+    has_role(auth.uid(), 'admin'::app_role) 
+    OR (azienda_id IN (
+      SELECT a.id FROM aziende a
+      WHERE (
+        (a.inserita_da_gestore_id IN (SELECT g.id FROM gestori g WHERE g.profile_id = auth.uid()))
+        OR (a.inserita_da_docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
+        OR (a.profile_id = auth.uid())
+      )
+    ))
+    OR (docente_id IN (SELECT d.id FROM docenti d WHERE d.profile_id = auth.uid()))
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
-CREATE POLICY "Users can view their own badges" 
-ON public.badge_assegnazioni FOR SELECT 
-USING (
-  (docente_id IN (SELECT docenti.id FROM docenti WHERE docenti.profile_id = auth.uid()))
-  OR (azienda_id IN (SELECT aziende.id FROM aziende WHERE aziende.profile_id = auth.uid()))
-);
+DO $$ BEGIN
+  CREATE POLICY "Users can view their own badges" 
+  ON public.badge_assegnazioni FOR SELECT 
+  USING (
+    (docente_id IN (SELECT docenti.id FROM docenti WHERE docenti.profile_id = auth.uid()))
+    OR (azienda_id IN (SELECT aziende.id FROM aziende WHERE aziende.profile_id = auth.uid()))
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

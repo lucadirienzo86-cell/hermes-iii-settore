@@ -1,0 +1,12 @@
+sequenceDiagram
+  participant U as User
+  participant FE as Frontend
+  participant SB as Supabase Auth
+  participant DB as Profile DB
+
+  U->>FE: submit credentials
+  FE->>SB: signIn(email,password)
+  SB-->>FE: session + access_token
+  FE->>DB: fetch profile (from supabase)
+  DB-->>FE: profile
+  FE-->>U: show dashboard (based on role)

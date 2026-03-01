@@ -33,10 +33,12 @@ CREATE TABLE IF NOT EXISTS public.bandi_sync_log (
 ALTER TABLE public.bandi_sync_log ENABLE ROW LEVEL SECURITY;
 
 -- Only admins can view sync logs (using user_roles table)
-CREATE POLICY "Admin can view sync logs"
-ON public.bandi_sync_log
-FOR SELECT
-USING (public.has_role(auth.uid(), 'admin'));
+DO $$ BEGIN
+  CREATE POLICY "Admin can view sync logs"
+  ON public.bandi_sync_log
+  FOR SELECT
+  USING (public.has_role(auth.uid(), 'admin'));
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 -- Create function to generate deduplication hash
 CREATE OR REPLACE FUNCTION public.generate_bando_hash(
@@ -59,7 +61,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trigger_set_bando_hash ON public.bandi;
-CREATE TRIGGER trigger_set_bando_hash
-BEFORE INSERT OR UPDATE ON public.bandi
-FOR EACH ROW
-EXECUTE FUNCTION public.set_bando_hash();
+DO $$ BEGIN
+  CREATE TRIGGER trigger_set_bando_hash
+  BEFORE INSERT OR UPDATE ON public.bandi
+  FOR EACH ROW
+  EXECUTE FUNCTION public.set_bando_hash();
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

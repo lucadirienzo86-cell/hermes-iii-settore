@@ -29,21 +29,25 @@ $$;
 
 -- 2) Replace the policies created earlier with versions that use the helper functions
 DROP POLICY IF EXISTS "Gestori Pratiche can view assigned gestori" ON public.gestori;
-CREATE POLICY "Gestori Pratiche can view assigned gestori"
-ON public.gestori
-FOR SELECT
-USING (
-  id IN (
-    SELECT public.get_gestori_ids_for_gestore_pratiche(auth.uid())
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Gestori Pratiche can view assigned gestori"
+  ON public.gestori
+  FOR SELECT
+  USING (
+    id IN (
+      SELECT public.get_gestori_ids_for_gestore_pratiche(auth.uid())
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 DROP POLICY IF EXISTS "Gestori Pratiche can view assigned docenti" ON public.docenti;
-CREATE POLICY "Gestori Pratiche can view assigned docenti"
-ON public.docenti
-FOR SELECT
-USING (
-  id IN (
-    SELECT public.get_docenti_ids_for_gestore_pratiche(auth.uid())
-  )
-);
+DO $$ BEGIN
+  CREATE POLICY "Gestori Pratiche can view assigned docenti"
+  ON public.docenti
+  FOR SELECT
+  USING (
+    id IN (
+      SELECT public.get_docenti_ids_for_gestore_pratiche(auth.uid())
+    )
+  );
+EXCEPTION WHEN OTHERS THEN NULL; END $$;

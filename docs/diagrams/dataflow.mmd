@@ -1,0 +1,14 @@
+sequenceDiagram
+  participant U as User (Browser)
+  participant FE as Frontend
+  participant SF as Supabase Functions
+  participant DB as Postgres DB
+  participant EX as External API
+
+  U->>FE: ricerca bando / upload pdf
+  FE->>SF: invoke parse-bando (file url / id)
+  SF->>EX: chiamata API parsing/AI
+  EX-->>SF: risultato parsing
+  SF->>DB: salva record/metadata
+  SF->>FE: ritorna risultato
+  FE-->>U: mostra risultato
