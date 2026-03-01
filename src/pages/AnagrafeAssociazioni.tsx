@@ -36,6 +36,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAssociazioniTerzoSettore, useCreateAssociazioneTS } from '@/hooks/useAssociazioniTerzoSettore';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { IstituzionaleLayout } from '@/layouts/IstituzionaleLayout';
 import { GestioneAlboDialog } from '@/components/comune/GestioneAlboDialog';
 import { format } from 'date-fns';
@@ -153,11 +154,34 @@ const AnagrafeAssociazioni = () => {
   };
 
   const handleInviaInvito = async (associazioneId: string) => {
-    // TODO: Implementare invio email
-    toast({
-      title: 'Invito inviato',
-      description: 'L\'email di invito è stata inviata con successo',
-    });
+    const associazione = associazioni?.find(a => a.id === associazioneId);
+    if (!associazione?.email) {
+      toast({ title: 'Errore', description: 'Email non disponibile per questa associazione.', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('send-comunicazione-istituzionale', {
+        body: {
+          destinatari: [{ email: associazione.email, denominazione: associazione.denominazione }],
+          oggetto: 'Sollecito completamento profilo — Albo Associazioni',
+          corpo: `Gentile ${associazione.denominazione},\n\nLe scriviamo per ricordarle di completare il profilo sul portale al fine di procedere con l'iscrizione all'Albo delle Associazioni.\n\nAcceda al portale e completi tutte le informazioni richieste.\n\nGrazie per la collaborazione.`,
+          tipo: 'sollecito',
+        },
+      });
+
+      if (error) throw error;
+
+      // Aggiorna stato a "invitata"
+      await supabase
+        .from('associazioni_terzo_settore')
+        .update({ stato_albo: 'invitata' } as any)
+        .eq('id', associazioneId);
+
+      toast({ title: 'Sollecito inviato', description: `Email inviata a ${associazione.email}` });
+    } catch {
+      toast({ title: 'Errore invio', description: 'Impossibile inviare il sollecito. Verificare la configurazione email.', variant: 'destructive' });
+    }
   };
 
   const getStatoInfo = (statoAlbo: string | undefined) => {

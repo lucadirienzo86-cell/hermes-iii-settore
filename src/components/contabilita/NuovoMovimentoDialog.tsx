@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUpCircle, ArrowDownCircle, Upload } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, Upload, X, FileText } from 'lucide-react';
 import { useCategorieContabili, useProgettiContabili, useCreateMovimento } from '@/hooks/useContabilita';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
 interface NuovoMovimentoDialogProps {
@@ -36,8 +38,12 @@ export function NuovoMovimentoDialog({
   const { data: categorie } = useCategorieContabili('mod_d');
   const { data: progetti } = useProgettiContabili(associazioneId);
   const createMovimento = useCreateMovimento();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [tipo, setTipo] = useState<'entrata' | 'uscita'>(tipoDefault);
+  const [allegato, setAllegato] = useState<File | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [formData, setFormData] = useState({
     data_movimento: format(new Date(), 'yyyy-MM-dd'),
     importo: '',
@@ -56,10 +62,21 @@ export function NuovoMovimentoDialog({
     return cat.sezione === 'USCITE' && cat.codice.includes('.');
   }) || [];
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const maxSize = 10 * 1024 * 1024; // 10 MB
+    if (file.size > maxSize) {
+      toast({ title: 'File troppo grande', description: 'Massimo 10 MB', variant: 'destructive' });
+      return;
+    }
+    setAllegato(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    await createMovimento.mutateAsync({
+
+    const movimento = await createMovimento.mutateAsync({
       associazione_id: associazioneId,
       esercizio_id: esercizioId,
       tipo,
@@ -74,7 +91,34 @@ export function NuovoMovimentoDialog({
       note: formData.note || null,
     });
 
+    // Upload allegato se presente
+    if (allegato && movimento?.id) {
+      setUploadingFile(true);
+      try {
+        const ext = allegato.name.split('.').pop();
+        const path = `${associazioneId}/${movimento.id}/${Date.now()}.${ext}`;
+        const { error: storageError } = await supabase.storage
+          .from('contabilita-documenti')
+          .upload(path, allegato, { contentType: allegato.type, upsert: false });
+
+        if (storageError) throw storageError;
+
+        await supabase.from('documenti_contabili').insert({
+          movimento_id: movimento.id,
+          nome_file: allegato.name,
+          file_path: path,
+          mime_type: allegato.type,
+          dimensione: allegato.size,
+        });
+      } catch (err) {
+        toast({ title: 'Movimento salvato', description: 'Allegato non caricato: riprova dalla scheda del movimento.', variant: 'destructive' });
+      } finally {
+        setUploadingFile(false);
+      }
+    }
+
     onOpenChange(false);
+    setAllegato(null);
     setFormData({
       data_movimento: format(new Date(), 'yyyy-MM-dd'),
       importo: '',
@@ -266,12 +310,36 @@ export function NuovoMovimentoDialog({
             />
           </div>
 
-          {/* TODO: Upload documento */}
-          <div className="border-2 border-dashed rounded-lg p-4 text-center text-muted-foreground">
-            <Upload className="h-6 w-6 mx-auto mb-2" />
-            <p className="text-sm">Allega giustificativo (opzionale)</p>
-            <p className="text-xs">PDF, immagine o documento</p>
-          </div>
+          {/* Upload allegato */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          {allegato ? (
+            <div className="flex items-center gap-3 border rounded-lg p-3 bg-muted/40">
+              <FileText className="h-5 w-5 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{allegato.name}</p>
+                <p className="text-xs text-muted-foreground">{(allegato.size / 1024).toFixed(0)} KB</p>
+              </div>
+              <Button type="button" variant="ghost" size="icon" onClick={() => setAllegato(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full border-2 border-dashed rounded-lg p-4 text-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+            >
+              <Upload className="h-6 w-6 mx-auto mb-2" />
+              <p className="text-sm">Allega giustificativo (opzionale)</p>
+              <p className="text-xs">PDF, immagine, Word, Excel — max 10 MB</p>
+            </button>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
@@ -279,10 +347,10 @@ export function NuovoMovimentoDialog({
             </Button>
             <Button
               type="submit"
-              disabled={createMovimento.isPending || !formData.categoria_id || !formData.importo}
+              disabled={createMovimento.isPending || uploadingFile || !formData.categoria_id || !formData.importo}
               className={tipo === 'entrata' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'}
             >
-              {createMovimento.isPending ? 'Salvataggio...' : 'Registra Movimento'}
+              {uploadingFile ? 'Caricamento allegato...' : createMovimento.isPending ? 'Salvataggio...' : 'Registra Movimento'}
             </Button>
           </DialogFooter>
         </form>

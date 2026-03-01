@@ -222,10 +222,18 @@ export const useTogglePaymentLink = () => {
   });
 };
 
-// Helper to generate a Manu Pay link (placeholder - to be implemented with actual Manu Pay API)
+/**
+ * Genera il link di pagamento condivisibile.
+ *
+ * Integrazione Manu Pay: sostituire questa funzione con la chiamata
+ * all'endpoint Manu Pay (es. POST /api/payment-links) che restituisce
+ * l'URL esterno del gateway. Richiede: MANU_PAY_API_KEY + MANU_PAY_BASE_URL
+ * configurati come secrets in Supabase e una Edge Function dedicata.
+ *
+ * Fino all'integrazione, il link punta alla pagina interna /pay/:slug
+ * che mostra i dettagli del pagamento con IBAN/istruzioni manuali.
+ */
 export const generateManuPayLink = (paymentLink: PaymentLink): string => {
-  // TODO: Integrate with actual Manu Pay API
-  // For now, return a placeholder URL based on slug
   const baseUrl = window.location.origin;
   return `${baseUrl}/pay/${paymentLink.slug}`;
 };
