@@ -598,7 +598,7 @@ Rispondi SOLO con un JSON valido in questo formato:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-2.5-flash',
             messages: [
               { role: 'user', content: prompt }
             ],
